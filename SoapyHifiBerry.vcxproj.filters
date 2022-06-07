@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source files">
+      <UniqueIdentifier>{df4eee58-a89d-4884-9778-16b53c07fc5d}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header files">
+      <UniqueIdentifier>{5c6c6144-0ad4-4e4a-a513-d1cda9dd69ca}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource files">
+      <UniqueIdentifier>{6f47f39c-6d89-40aa-b15f-32460a3e7107}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="VisualGDB settings">
+      <UniqueIdentifier>{b6dd21c1-f4aa-4d3b-b535-c7bd8bb0183d}</UniqueIdentifier>
+      <Extensions>vgdbsettings</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="SoapyHifiBerry.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioInput.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioOutput.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="RtAudio.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="si5351.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="SoapyHifiBerrySettings.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="SoapyHifiBerryStreaming.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SoapyHifiBerry.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="Audiodefs.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioInput.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioOutput.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataBuffer.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="RtAudio.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="si5351.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SoapyHifiBerry-Debug.vgdbsettings">
+      <Filter>VisualGDB settings</Filter>
+    </None>
+    <None Include="SoapyHifiBerry-Release.vgdbsettings">
+      <Filter>VisualGDB settings</Filter>
+    </None>
+  </ItemGroup>
+</Project>

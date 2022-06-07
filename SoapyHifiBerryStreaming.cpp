@@ -1,0 +1,177 @@
+#include "SoapyHifiBerry.h"
+#include <chrono>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <stdint.h>
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
+
+void SoapyHifiBerry::setSampleRate(const int direction, const size_t channel, const double rate)
+{
+	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::setSampleRate called");
+
+	int irate = floor(rate);
+
+	if (direction == SOAPY_SDR_TX)
+	{
+
+	}
+	if (direction == SOAPY_SDR_RX)
+	{
+	
+	}
+
+
+}
+
+SoapySDR::RangeList SoapyHifiBerry::getSampleRateRange(const int direction, const size_t channel) const
+{
+
+	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::getSampleRateRange called");
+
+	SoapySDR::RangeList rangeList;
+
+	if (direction == SOAPY_SDR_RX)
+		rangeList.push_back(SoapySDR::Range(48000.0, 192000.0, 192000.0));
+	if (direction == SOAPY_SDR_TX)
+		rangeList.push_back(SoapySDR::Range(48000.0, 192000.0, 192000.0));
+
+	return rangeList;
+}
+
+std::vector<std::string> SoapyHifiBerry::getStreamFormats(const int direction, const size_t channel) const
+{
+	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::getStreamFormats called");
+
+	std::vector<std::string> formats;
+
+	formats.push_back(SOAPY_SDR_CF32);
+	//formats.push_back(SOAPY_SDR_CS16);
+
+	return formats;
+}
+
+std::string SoapyHifiBerry::getNativeStreamFormat(const int direction, const size_t channel, double &fullScale) const
+{
+	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::getNativeStreamFormat called");
+
+	if (direction == SOAPY_SDR_RX)
+	{
+		fullScale = 16777216.0; 
+	}
+	else if (direction == SOAPY_SDR_TX)
+	{
+		fullScale = 16777216.0; 
+	}
+	return SOAPY_SDR_CF32;
+}
+
+SoapySDR::ArgInfoList SoapyHifiBerry::getStreamArgsInfo(const int direction, const size_t channel) const
+{
+	SoapySDR::ArgInfoList streamArgs;
+
+	SoapySDR::ArgInfo bufflenArg;
+	bufflenArg.key = "bufflen";
+	bufflenArg.value = "2048";
+	bufflenArg.name = "Buffer Size";
+	bufflenArg.description = "Number of bytes per buffer, multiples of 512 only.";
+	bufflenArg.units = "bytes";
+	bufflenArg.type = SoapySDR::ArgInfo::INT;
+
+	streamArgs.push_back(bufflenArg);
+
+	return streamArgs;
+}
+
+auto startTime = std::chrono::high_resolution_clock::now();
+
+SoapySDR::Stream *SoapyHifiBerry::setupStream(
+	const int direction,
+	const std::string &format,
+	const std::vector<size_t> &channels,
+	const SoapySDR::Kwargs &args)
+{
+	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::setupStream called");
+	startTime = std::chrono::high_resolution_clock::now();
+	//check the format
+	sdr_stream *ptr;
+	ptr = new sdr_stream(direction);
+
+	if (format == SOAPY_SDR_CF32)
+	{
+		SoapySDR_log(SOAPY_SDR_INFO, "Using format CF32.");
+		ptr->set_stream_format(HIFIBERRY_SDR_CF32);
+	}
+	else 
+	{
+		throw std::runtime_error(
+			"setupStream invalid format '" + format + "' -- Only CF32 is supported by SoapyHifiBerrySDR module.");
+	}
+	streams.push_back(ptr);
+	return (SoapySDR::Stream *)ptr;
+}
+
+void SoapyHifiBerry::closeStream(SoapySDR::Stream *stream)
+{
+	int i = 0;
+	for (auto con : streams)
+	{
+		if ((sdr_stream *)stream == con)
+		{
+			delete ((sdr_stream *)stream);
+			streams.erase(streams.begin() + i);
+		}
+		i++;
+	}
+}
+
+int SoapyHifiBerry::readStream(
+	SoapySDR::Stream *handle,
+	void *const *buffs,
+	const size_t numElems,
+	int &flags,
+	long long &timeNs,
+	const long timeoutUs)
+{
+	int nr_samples = 0;
+
+	void *buff_base = buffs[0];
+	IQSample *target_buffer = (IQSample *)buff_base;
+	sdr_stream *ptr = (sdr_stream *)handle;
+	IQSampleVector iqsamples;
+	
+	if (ptr->get_stream_format() == HIFIBERRY_SDR_CF32)
+	{
+		uptr_audioinput->read(iqsamples);
+		for (auto con : iqsamples)
+		{
+			target_buffer[nr_samples++] = con;
+		}
+	}
+		//printf("nr_samples %d sample: %d %d \n", nr_samples, left_sample, right_sample);
+	return (nr_samples); //return the number of IQ samples
+}
+
+int SoapyHifiBerry::writeStream(SoapySDR::Stream *handle, const void *const *buffs, const size_t numElems, int &flags, const long long timeNs, const long timeoutUs)
+{
+	size_t ret;
+	int nr_samples;
+
+	void const *buff_base = buffs[0];
+	IQSample *target_buffer = (IQSample *)buff_base;
+	sdr_stream *ptr = (sdr_stream *)handle;
+	IQSampleVector iqsamples;
+
+	if (ptr->get_stream_format() == HIFIBERRY_SDR_CF32)
+	{
+		for (int i = 0; i < numElems; i++)
+		{
+			IQSample iq;
+			iqsamples.push_back(target_buffer[i]);
+		}
+		uptr_audiooutput->write(iqsamples);
+	}
+	return numElems;
+}
