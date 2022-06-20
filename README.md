@@ -31,7 +31,7 @@ Open project in VisualStudio and compile with VisualGDB
 
 ```
 
-![sdrberry](https://github.com/paulh002/sdrberry/blob/master/rb_tranceiver.jpg)
+![Tayloe](https://github.com/paulh002/SoapyHifiBerry/blob/master/Tayloe.jpg)
 
 ![sdrberry](https://github.com/paulh002/sdrberry/blob/master/IMG_20220203_ft8.jpg)
 
