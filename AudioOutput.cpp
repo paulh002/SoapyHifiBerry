@@ -287,17 +287,23 @@ int controle_alsa(int device, int element, int ivalue)
 	snd_ctl_elem_id_set_interface(id, SND_CTL_ELEM_IFACE_MIXER);
 	snd_ctl_elem_id_set_numid(id, element);
 	if (err = lookup_id(id, handle))
+	{
+		snd_ctl_close(handle);
 		return err;
+	}
 
 	snd_ctl_elem_value_set_id(value, id);
 	snd_ctl_elem_value_set_integer(value, 0, ivalue);
+	snd_ctl_elem_value_set_integer(value, 1, ivalue);
 	//snd_ctl_elem_value_set_integer(value, 1, 77);
 
 	if ((err = snd_ctl_elem_write(handle, value)) < 0) {
 		fprintf(stderr, "Control element write error: %s\n",
 			snd_strerror(err));
+		snd_ctl_close(handle);
 		return err;
 	}
+	snd_ctl_close(handle);
 	return 0;
 }
 
