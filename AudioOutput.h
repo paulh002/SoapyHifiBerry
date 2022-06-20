@@ -50,3 +50,5 @@ private:
 	atomic<int>					underrun;
 	map<int, std::string> device_map;
 };
+
+int controle_alsa(int device, int element, int ivalue);

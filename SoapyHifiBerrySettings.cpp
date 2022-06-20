@@ -35,15 +35,15 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	uptr_audiooutput->open("snd_rpi_hifiberry_dacplusadcpro");
 	uptr_audioinput->open(uptr_audiooutput->get_device());
 
-	//si5351.set_correction(R.correction_si5351_no1, SI5351_PLL_INPUT_XO);
 	pSI5351 = make_unique<Si5351>("/dev/i2c-1",SI5351_BUS_BASE_ADDR);
 	pSI5351->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
+	pSI5351->set_correction(-200000L, SI5351_PLL_INPUT_XO);
 	pSI5351->drive_strength(CLK_VFO_RX, SI5351_DRIVE_2MA);
 	pSI5351->drive_strength(CLK_VFO_TX, SI5351_DRIVE_2MA);
 	pSI5351->output_enable(CLK_VFO_RX, 1);
 	pSI5351->output_enable(CLK_VFO_TX, 0);
 	pSI5351->output_enable(CLK_NA, 0);
-	//pSI5351->set_freq(700000000ULL, CLK_VFO_RX);
+	pSI5351->set_freq(2916800000ULL, CLK_VFO_RX);
 	pSI5351->update_status();
 }
 
@@ -187,14 +187,17 @@ SoapySDR::Range SoapyHifiBerry::getGainRange(const int direction, const size_t c
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::getGainRange called");
 
 	if (direction == SOAPY_SDR_RX)
-		return (SoapySDR::Range(-12, 48));
-	return (SoapySDR::Range(0, 15));
+		return (SoapySDR::Range(0, 100));
+	return (SoapySDR::Range(0, 100));
 }
 
 void SoapyHifiBerry::setGain(const int direction, const size_t channel, const double value)
 {
 
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::setGain called");
+
+	if (direction == SOAPY_SDR_RX)
+		controle_alsa(3, 21, (int) value); // numid = 21, iface = MIXER, name = 'ADC Capture Volume'
 
 }
 

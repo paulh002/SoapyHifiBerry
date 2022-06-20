@@ -251,3 +251,85 @@ unsigned int AudioOutput::getDevices()
 	}
 	return nDevices;
 }
+
+
+int lookup_id(snd_ctl_elem_id_t* id, snd_ctl_t* handle)
+{
+	int err;
+	snd_ctl_elem_info_t* info;
+	snd_ctl_elem_info_alloca(&info);
+
+	snd_ctl_elem_info_set_id(info, id);
+	if ((err = snd_ctl_elem_info(handle, info)) < 0) {
+		fprintf(stderr, "Cannot find the given element from card\n");
+		return err;
+	}
+	snd_ctl_elem_info_get_id(info, id);
+
+	return 0;
+}
+
+int controle_alsa(int device, int element, int ivalue)
+{
+	char	str[80];
+	int err;
+	snd_ctl_t* handle;
+	snd_ctl_elem_id_t* id;
+	snd_ctl_elem_value_t* value;
+	snd_ctl_elem_id_alloca(&id);
+	snd_ctl_elem_value_alloca(&value);
+	
+	sprintf(str, "hw:%d", device);
+	if ((err = snd_ctl_open(&handle, str, 0)) < 0) {
+		fprintf(stderr, "Card open error: %s\n", snd_strerror(err));
+		return err;
+	}
+	snd_ctl_elem_id_set_interface(id, SND_CTL_ELEM_IFACE_MIXER);
+	snd_ctl_elem_id_set_numid(id, element);
+	if (err = lookup_id(id, handle))
+		return err;
+
+	snd_ctl_elem_value_set_id(value, id);
+	snd_ctl_elem_value_set_integer(value, 0, ivalue);
+	//snd_ctl_elem_value_set_integer(value, 1, 77);
+
+	if ((err = snd_ctl_elem_write(handle, value)) < 0) {
+		fprintf(stderr, "Control element write error: %s\n",
+			snd_strerror(err));
+		return err;
+	}
+	return 0;
+}
+
+/*
+pi@pi3:~$ amixer --debug - c 3 controls
+numid = 22, iface = MIXER, name = 'Headphone Playback Volume'
+numid = 6, iface = MIXER, name = 'DSP Program'
+numid = 28, iface = MIXER, name = 'ADC Left Capture Source'
+numid = 23, iface = MIXER, name = 'ADC Left Input'
+numid = 25, iface = MIXER, name = 'ADC Mic Bias'
+numid = 29, iface = MIXER, name = 'ADC Right Capture Source'
+numid = 24, iface = MIXER, name = 'ADC Right Input'
+numid = 21, iface = MIXER, name = 'ADC Capture Volume'
+numid = 3, iface = MIXER, name = 'Analogue Playback Boost Volume'
+numid = 2, iface = MIXER, name = 'Analogue Playback Volume'
+numid = 10, iface = MIXER, name = 'Auto Mute Mono Switch'
+numid = 11, iface = MIXER, name = 'Auto Mute Switch'
+numid = 8, iface = MIXER, name = 'Auto Mute Time Left'
+numid = 9, iface = MIXER, name = 'Auto Mute Time Right'
+numid = 7, iface = MIXER, name = 'Clock Missing Period'
+numid = 5, iface = MIXER, name = 'Deemphasis Switch'
+numid = 4, iface = MIXER, name = 'Digital Playback Switch'
+numid = 1, iface = MIXER, name = 'Digital Playback Volume'
+numid = 20, iface = MIXER, name = 'Max Overclock DAC'
+numid = 19, iface = MIXER, name = 'Max Overclock DSP'
+numid = 18, iface = MIXER, name = 'Max Overclock PLL'
+numid = 26, iface = MIXER, name = 'PGA Gain Left'
+numid = 27, iface = MIXER, name = 'PGA Gain Right'
+numid = 16, iface = MIXER, name = 'Volume Ramp Down Emergency Rate'
+numid = 17, iface = MIXER, name = 'Volume Ramp Down Emergency Step'
+numid = 12, iface = MIXER, name = 'Volume Ramp Down Rate'
+numid = 13, iface = MIXER, name = 'Volume Ramp Down Step'
+numid = 14, iface = MIXER, name = 'Volume Ramp Up Rate'
+numid = 15, iface = MIXER, name = 'Volume Ramp Up Step'
+*/

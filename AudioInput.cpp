@@ -116,7 +116,7 @@ bool AudioInput::open(unsigned int device)
 	parameters.deviceId = device;
 	info = getDeviceInfo(device);
 	parameters.nChannels = 2; //	info.inputChannels;
-	err = this->openStream(NULL, &parameters, RTAUDIO_FLOAT64, sampleRate, &bufferFrames, &record, (void *)this);
+	err = this->openStream(NULL, &parameters, RTAUDIO_FLOAT32, sampleRate, &bufferFrames, &record, (void *)this);
 	if (err != RTAUDIO_NO_ERROR)
 	{
 		printf("Cannot open audio input stream\n");
