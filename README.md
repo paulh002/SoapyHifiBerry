@@ -33,7 +33,7 @@ Open project in VisualStudio and compile with VisualGDB
 
 ![Tayloe](https://github.com/paulh002/SoapyHifiBerry/blob/master/Tayloe.jpg)
 
-![sdrberry](https://github.com/paulh002/sdrberry/blob/master/IMG_20220203_ft8.jpg)
+![sdrberry](https://github.com/paulh002/SoapyHifiBerry/blob/master/HifiBerry%20Tayloe.jpg)
 
 ![sdrberry](https://github.com/paulh002/sdrberry/blob/master/IMG_20211215_200645.jpg)
 
