@@ -35,11 +35,4 @@ Open project in VisualStudio and compile with VisualGDB
 
 ![sdrberry](https://github.com/paulh002/SoapyHifiBerry/blob/master/HifiBerry%20Tayloe.jpg)
 
-![sdrberry](https://github.com/paulh002/sdrberry/blob/master/IMG_20211215_200645.jpg)
-
-![sdrberry](https://github.com/paulh002/sdrberry/blob/master/IMG_20210909_183113.jpg)
-
-[![Radioberry demo](https://img.youtube.com/vi/BMJiv3YGv-k/0.jpg)](https://youtu.be/PQ_Np5SfcxA)
-
-# ESP32 Remote control for raspberry pi
-![sdrberry](https://github.com/paulh002/sdrberry/blob/master/IMG_20210903_133827.jpg)
+![sdrberry](https://github.com/paulh002/sdrberry/blob/master/rb_tranceiver.jpg)
