@@ -123,6 +123,7 @@ bool AudioOutput::open(std::string device)
 		}
 	}
 	info = this->getDeviceInfo(parameters.deviceId);
+	alsa_device = parameters.deviceId - 1;
 	parameters.nChannels = info.outputChannels;
 	printf("audio device = %d %s samplerate %d channels %d\n", parameters.deviceId, device.c_str(), m_sampleRate, parameters.nChannels);
 	err = this->openStream(&parameters, NULL, RTAUDIO_FLOAT64, m_sampleRate, &bufferFrames, &Audioout, (void *)databuffer, NULL);
@@ -269,7 +270,7 @@ int lookup_id(snd_ctl_elem_id_t* id, snd_ctl_t* handle)
 	return 0;
 }
 
-int controle_alsa(int device, int element, int ivalue)
+int AudioOutput::controle_alsa(int element, int ivalue)
 {
 	char	str[80];
 	int err;
@@ -279,7 +280,7 @@ int controle_alsa(int device, int element, int ivalue)
 	snd_ctl_elem_id_alloca(&id);
 	snd_ctl_elem_value_alloca(&value);
 	
-	sprintf(str, "hw:%d", device);
+	sprintf(str, "hw:%d", alsa_device);
 	if ((err = snd_ctl_open(&handle, str, 0)) < 0) {
 		fprintf(stderr, "Card open error: %s\n", snd_strerror(err));
 		return err;

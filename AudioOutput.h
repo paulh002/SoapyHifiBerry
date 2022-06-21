@@ -34,6 +34,7 @@ public:
   unsigned int get_samplerate() { return m_sampleRate; }
   unsigned int getDevices();
   unsigned int get_device() { return parameters.deviceId;}
+  int controle_alsa(int element, int ivalue);
 
 protected:
 	void samplesToInt16(const SampleVector& samples,
@@ -48,6 +49,7 @@ private:
 	double						m_volume;
 	string						m_error;
 	atomic<int>					underrun;
+	int alsa_device;
 	map<int, std::string> device_map;
 };
 

@@ -197,7 +197,7 @@ void SoapyHifiBerry::setGain(const int direction, const size_t channel, const do
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::setGain called");
 
 	if (direction == SOAPY_SDR_RX)
-		controle_alsa(3, 21, (int) value); // numid = 21, iface = MIXER, name = 'ADC Capture Volume'
+		uptr_audiooutput->controle_alsa(21, (int) value); // numid = 21, iface = MIXER, name = 'ADC Capture Volume'
 
 }
 
