@@ -40,6 +40,15 @@
     <ClCompile Include="SoapyHifiBerryStreaming.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
+    <ClCompile Include="configfile.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="configoption.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="strlib.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SoapyHifiBerry.h">
@@ -61,6 +70,15 @@
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="si5351.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="configfile.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="configoption.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="strlib.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>

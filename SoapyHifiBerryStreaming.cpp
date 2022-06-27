@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
+#include <queue>
 
 void SoapyHifiBerry::setSampleRate(const int direction, const size_t channel, const double rate)
 {
@@ -127,6 +128,9 @@ void SoapyHifiBerry::closeStream(SoapySDR::Stream *stream)
 	}
 }
 
+std::queue<float> delay_queue;
+const int delay = 0;
+
 int SoapyHifiBerry::readStream(
 	SoapySDR::Stream *handle,
 	void *const *buffs,
@@ -147,12 +151,25 @@ int SoapyHifiBerry::readStream(
 		uptr_audioinput->read(iqsamples);
 		for (auto con : iqsamples)
 		{
-			target_buffer[nr_samples++] = con;
+			IQSample iq = con;
+			if (delay > 0)
+			{
+				delay_queue.push(iq.real());
+				iq.real(0.0);
+				if (delay_queue.size() == delay)
+				{
+					iq.real(delay_queue.front());
+					delay_queue.pop();
+				}
+			}
+			target_buffer[nr_samples++] = iq;
+			//printf("I %f, Q %f\n", con.real(), con.imag());
 		}
 	}
-		//printf("nr_samples %d sample: %d %d \n", nr_samples, left_sample, right_sample);
+	//printf("nr_samples %d sample: %d %d \n", nr_samples, left_sample, right_sample);
 	return (nr_samples); //return the number of IQ samples
 }
+
 
 int SoapyHifiBerry::writeStream(SoapySDR::Stream *handle, const void *const *buffs, const size_t numElems, int &flags, const long long timeNs, const long timeoutUs)
 {
@@ -168,7 +185,6 @@ int SoapyHifiBerry::writeStream(SoapySDR::Stream *handle, const void *const *buf
 	{
 		for (int i = 0; i < numElems; i++)
 		{
-			IQSample iq;
 			iqsamples.push_back(target_buffer[i]);
 		}
 		uptr_audiooutput->write(iqsamples);

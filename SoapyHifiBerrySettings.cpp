@@ -12,6 +12,30 @@
 /***********************************************************************
  * Device interface
  **********************************************************************/
+const cfg::File::ConfigMap defaultOptions = {
+	{"si5351", {{"correction", cfg::makeOption("50000")}}},
+	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}}}
+};
+
+int SoapyHifiBerry::get_int(string section, string key)
+{
+	auto option = uptr_cfg->getSection(section);
+	auto s = option.find(key);
+	if (s == option.end())
+		return 0;
+	string st = s->second;
+	return atoi((const char *)st.c_str());
+}
+
+string SoapyHifiBerry::get_string(string section, string key)
+{
+	string st;
+	auto option = uptr_cfg->getSection(section);
+	auto s = option.find(key);
+	if (s != option.end())
+		st = s->second;
+	return st;
+}
 
 SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 {
@@ -20,6 +44,13 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::SoapyHifiBerry  constructor called");
 	no_channels = 1;
 
+	uptr_cfg = make_unique<cfg::File>();
+	if (!uptr_cfg->loadFromFile("hifiberry.cfg"))
+	{
+		uptr_cfg->setDefaultOptions(defaultOptions);
+		uptr_cfg->writeToFile("hifiberry.cfg");
+	}
+	
 	uptr_audiooutput = make_unique<AudioOutput>(192000, &source_buffer_tx, RtAudio::LINUX_ALSA);
 	uptr_audioinput = make_unique<AudioInput>(192000, true, &source_buffer_rx, RtAudio::LINUX_ALSA);
 
@@ -32,12 +63,15 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 			printf("Audio device %s\n", devices[i].c_str());
 		}
 	}
-	uptr_audiooutput->open("snd_rpi_hifiberry_dacplusadcpro");
+	int corr = get_int("si5351", "correction");
+	string dev = get_string("sound", "device");
+	
+	uptr_audiooutput->open(dev);
 	uptr_audioinput->open(uptr_audiooutput->get_device());
 
 	pSI5351 = make_unique<Si5351>("/dev/i2c-1",SI5351_BUS_BASE_ADDR);
 	pSI5351->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
-	pSI5351->set_correction(-200000L, SI5351_PLL_INPUT_XO);
+	pSI5351->set_correction((long)corr, SI5351_PLL_INPUT_XO);
 	pSI5351->drive_strength(CLK_VFO_RX, SI5351_DRIVE_2MA);
 	pSI5351->drive_strength(CLK_VFO_TX, SI5351_DRIVE_2MA);
 	pSI5351->output_enable(CLK_VFO_RX, 1);
@@ -69,7 +103,7 @@ std::string SoapyHifiBerry::getHardwareKey(void) const
 }
 
 SoapySDR::Kwargs SoapyHifiBerry::getHardwareInfo(void) const
-{
+{	
 
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::getHardwareInfo called");
 

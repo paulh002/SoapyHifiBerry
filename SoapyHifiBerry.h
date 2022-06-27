@@ -23,7 +23,7 @@
 #include "AudioInput.h"
 #include "AudioOutput.h" 
 #include "si5351.h"
-
+#include "configfile.h"
 
 typedef enum hifiberrysdrStreamFormat
 {
@@ -156,8 +156,12 @@ class SoapyHifiBerry : public SoapySDR::Device
 
 	unique_ptr<AudioOutput> uptr_audiooutput;
 	unique_ptr<AudioInput> uptr_audioinput;
+	unique_ptr<cfg::File> uptr_cfg;
 
 	DataBuffer<IQSample> source_buffer_rx;
 	DataBuffer<IQSample> source_buffer_tx;
 	unique_ptr<Si5351> pSI5351;
+
+	int get_int(string section, string key);
+	string get_string(string section, string key);
 };

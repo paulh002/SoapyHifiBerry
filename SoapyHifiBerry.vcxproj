@@ -77,20 +77,26 @@
   <ItemGroup>
     <ClCompile Include="AudioInput.cpp" />
     <ClCompile Include="AudioOutput.cpp" />
+    <ClCompile Include="configfile.cpp" />
+    <ClCompile Include="configoption.cpp" />
     <ClCompile Include="RtAudio.cpp" />
     <ClCompile Include="si5351.cpp" />
     <ClCompile Include="SoapyHifiBerry.cpp" />
     <ClCompile Include="SoapyHifiBerrySettings.cpp" />
     <ClCompile Include="SoapyHifiBerryStreaming.cpp" />
+    <ClCompile Include="strlib.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audiodefs.h" />
     <ClInclude Include="AudioInput.h" />
     <ClInclude Include="AudioOutput.h" />
+    <ClInclude Include="configfile.h" />
+    <ClInclude Include="configoption.h" />
     <ClInclude Include="DataBuffer.h" />
     <ClInclude Include="RtAudio.h" />
     <ClInclude Include="si5351.h" />
     <ClInclude Include="SoapyHifiBerry.h" />
+    <ClInclude Include="strlib.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SoapyHifiBerry-Debug.vgdbsettings" />
