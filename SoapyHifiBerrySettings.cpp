@@ -75,7 +75,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	pSI5351->drive_strength(CLK_VFO_RX, SI5351_DRIVE_2MA);
 	pSI5351->drive_strength(CLK_VFO_TX, SI5351_DRIVE_2MA);
 	pSI5351->output_enable(CLK_VFO_RX, 1);
-	pSI5351->output_enable(CLK_VFO_TX, 0);
+	pSI5351->output_enable(CLK_VFO_TX, 1);
 	pSI5351->output_enable(CLK_NA, 0);
 	pSI5351->set_freq(2916800000ULL, CLK_VFO_RX);
 	pSI5351->update_status();

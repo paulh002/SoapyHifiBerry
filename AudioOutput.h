@@ -11,6 +11,8 @@
 #include "Audiodefs.h"
 #include "DataBuffer.h"
 
+extern const int audio_buffer_size;
+
 class AudioOutput :
     public RtAudio
 {

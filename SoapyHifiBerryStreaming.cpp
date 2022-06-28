@@ -170,6 +170,7 @@ int SoapyHifiBerry::readStream(
 	return (nr_samples); //return the number of IQ samples
 }
 
+IQSampleVector iqsamples;
 
 int SoapyHifiBerry::writeStream(SoapySDR::Stream *handle, const void *const *buffs, const size_t numElems, int &flags, const long long timeNs, const long timeoutUs)
 {
@@ -179,15 +180,15 @@ int SoapyHifiBerry::writeStream(SoapySDR::Stream *handle, const void *const *buf
 	void const *buff_base = buffs[0];
 	IQSample *target_buffer = (IQSample *)buff_base;
 	sdr_stream *ptr = (sdr_stream *)handle;
-	IQSampleVector iqsamples;
 
 	if (ptr->get_stream_format() == HIFIBERRY_SDR_CF32)
 	{
 		for (int i = 0; i < numElems; i++)
 		{
 			iqsamples.push_back(target_buffer[i]);
+			if (iqsamples.size() == audio_buffer_size)
+				uptr_audiooutput->write(iqsamples);
 		}
-		uptr_audiooutput->write(iqsamples);
 	}
 	return numElems;
 }

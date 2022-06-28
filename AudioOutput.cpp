@@ -8,10 +8,11 @@
  * A underrun counter is increased for adjusting samplerate of the radio
  **/
 
+const int audio_buffer_size{2024};
 
 int Audioout( void *outputBuffer,void *inputBuffer,unsigned int nBufferFrames,double streamTime,RtAudioStreamStatus status,	void *userData)
 {
-	double *buffer = (double *) outputBuffer;
+	IQSample *buffer = (IQSample *) outputBuffer;
 	
 	if (status)
 		std::cout << "Stream underflow detected!\n" << std::endl;
@@ -21,7 +22,7 @@ int Audioout( void *outputBuffer,void *inputBuffer,unsigned int nBufferFrames,do
 	{
 		for (int i = 0; i < nBufferFrames; i++)
 		{
-			((IQSample *)buffer)[i] = 0.0;
+			buffer[i] = IQSample(0,0);
 		}
 		return 0;
 	}
@@ -86,7 +87,7 @@ AudioOutput::AudioOutput(int pcmrate, DataBuffer<IQSample> *AudioBuffer, RtAudio
 {
 	m_sampleRate = pcmrate;
 	databuffer = AudioBuffer;
-	bufferFrames = 1024;
+	bufferFrames = audio_buffer_size;
 	parameters.nChannels = 2;
 	parameters.firstChannel = 0;
 	parameters.deviceId = 0;
@@ -126,7 +127,7 @@ bool AudioOutput::open(std::string device)
 	alsa_device = parameters.deviceId - 1;
 	parameters.nChannels = info.outputChannels;
 	printf("audio device = %d %s samplerate %d channels %d\n", parameters.deviceId, device.c_str(), m_sampleRate, parameters.nChannels);
-	err = this->openStream(&parameters, NULL, RTAUDIO_FLOAT64, m_sampleRate, &bufferFrames, &Audioout, (void *)databuffer, NULL);
+	err = this->openStream(&parameters, NULL, RTAUDIO_FLOAT32, m_sampleRate, &bufferFrames, &Audioout, (void *)databuffer, NULL);
 	if (err != RTAUDIO_NO_ERROR)
 	{
 		printf("Cannot open audio output stream\n");
