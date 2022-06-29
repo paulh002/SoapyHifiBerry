@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <queue>
 
+IQSampleVector iqsamples;
+
 void SoapyHifiBerry::setSampleRate(const int direction, const size_t channel, const double rate)
 {
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::setSampleRate called");
@@ -110,8 +112,29 @@ SoapySDR::Stream *SoapyHifiBerry::setupStream(
 		throw std::runtime_error(
 			"setupStream invalid format '" + format + "' -- Only CF32 is supported by SoapyHifiBerrySDR module.");
 	}
+
+	if (direction == SOAPY_SDR_TX)
+	{
+		iqsamples.clear();
+		pSI5351->output_enable(CLK_VFO_TX, 1);
+	}
+
 	streams.push_back(ptr);
 	return (SoapySDR::Stream *)ptr;
+}
+
+void SoapyHifiBerry::deactivateStream(SoapySDR::Stream *stream)
+{
+	int i = 0;
+	for (auto con : streams)
+	{
+		if ((sdr_stream *)stream == con)
+		{
+			if (con->get_direction() == SOAPY_SDR_TX)
+				pSI5351->output_enable(CLK_VFO_TX, 0);
+		}
+		i++;
+	}
 }
 
 void SoapyHifiBerry::closeStream(SoapySDR::Stream *stream)
@@ -170,7 +193,6 @@ int SoapyHifiBerry::readStream(
 	return (nr_samples); //return the number of IQ samples
 }
 
-IQSampleVector iqsamples;
 
 int SoapyHifiBerry::writeStream(SoapySDR::Stream *handle, const void *const *buffs, const size_t numElems, int &flags, const long long timeNs, const long timeoutUs)
 {

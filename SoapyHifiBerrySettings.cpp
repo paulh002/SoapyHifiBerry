@@ -1,13 +1,5 @@
 #include "SoapyHifiBerry.h"
 
-/*-------------------------------------------------------
-   Si5351
---------------------------------------------------------*/
-#define SI5351_BUS_BASE_ADDR 0x60
-
-#define CLK_VFO_RX SI5351_CLK0
-#define CLK_VFO_TX SI5351_CLK1
-#define CLK_NA SI5351_CLK2
 
 /***********************************************************************
  * Device interface
@@ -75,9 +67,8 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	pSI5351->drive_strength(CLK_VFO_RX, SI5351_DRIVE_2MA);
 	pSI5351->drive_strength(CLK_VFO_TX, SI5351_DRIVE_2MA);
 	pSI5351->output_enable(CLK_VFO_RX, 1);
-	pSI5351->output_enable(CLK_VFO_TX, 1);
+	pSI5351->output_enable(CLK_VFO_TX, 0);
 	pSI5351->output_enable(CLK_NA, 0);
-	pSI5351->set_freq(2916800000ULL, CLK_VFO_RX);
 	pSI5351->update_status();
 }
 

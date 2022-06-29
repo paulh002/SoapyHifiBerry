@@ -25,6 +25,15 @@
 #include "si5351.h"
 #include "configfile.h"
 
+/*-------------------------------------------------------
+   Si5351
+--------------------------------------------------------*/
+#define SI5351_BUS_BASE_ADDR 0x60
+
+#define CLK_VFO_RX SI5351_CLK0
+#define CLK_VFO_TX SI5351_CLK1
+#define CLK_NA SI5351_CLK2
+
 typedef enum hifiberrysdrStreamFormat
 {
 	HIFIBERRY_SDR_CF32,
@@ -84,6 +93,7 @@ class SoapyHifiBerry : public SoapySDR::Device
 	SoapySDR::ArgInfoList getStreamArgsInfo(const int direction, const size_t channel) const;
 
 	void closeStream(SoapySDR::Stream *stream);
+	void deactivateStream(SoapySDR::Stream *stream);
 
 	SoapySDR::Stream *setupStream(
 		const int direction,
