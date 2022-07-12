@@ -68,7 +68,7 @@ make
 sudo make install
 ```
 
-##SoapyHifiBerry will create config file HifiBerry.cfg Si5351 correction can be configured and audio adc/dac alsa device name set
+SoapyHifiBerry will create config file HifiBerry.cfg Si5351 correction can be configured and audio adc/dac alsa device name set
 ```
 [si5351]
 correction = "50000"
