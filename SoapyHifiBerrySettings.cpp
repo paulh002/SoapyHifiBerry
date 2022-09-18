@@ -43,11 +43,11 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		uptr_cfg->writeToFile("hifiberry.cfg");
 	}
 	
-	uptr_audiooutput = make_unique<AudioOutput>(192000, &source_buffer_tx, RtAudio::LINUX_ALSA);
-	uptr_audioinput = make_unique<AudioInput>(192000, true, &source_buffer_rx, RtAudio::LINUX_ALSA);
+	uptr_HifiBerryAudioOutputput = make_unique<HifiBerryAudioOutputput>(192000, &source_buffer_tx, RtAudio::LINUX_ALSA);
+	uptr_HifiBerryAudioInput = make_unique<HifiBerryAudioInput>(192000, true, &source_buffer_rx, RtAudio::LINUX_ALSA);
 
 	std::vector<std::string> devices;
-	uptr_audiooutput->listDevices(devices);
+	uptr_HifiBerryAudioOutputput->listDevices(devices);
 	for (int i = 0; i < devices.size(); i++)
 	{
 		if (devices[i].length() > 0)
@@ -58,8 +58,8 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	int corr = get_int("si5351", "correction");
 	string dev = get_string("sound", "device");
 	
-	uptr_audiooutput->open(dev);
-	uptr_audioinput->open(uptr_audiooutput->get_device());
+	uptr_HifiBerryAudioOutputput->open(dev);
+	uptr_HifiBerryAudioInput->open(uptr_HifiBerryAudioOutputput->get_device());
 
 	pSI5351 = make_unique<Si5351>("/dev/i2c-1",SI5351_BUS_BASE_ADDR);
 	pSI5351->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
@@ -222,7 +222,7 @@ void SoapyHifiBerry::setGain(const int direction, const size_t channel, const do
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::setGain called");
 
 	if (direction == SOAPY_SDR_RX)
-		uptr_audiooutput->controle_alsa(21, (int) value); // numid = 21, iface = MIXER, name = 'ADC Capture Volume'
+		uptr_HifiBerryAudioOutputput->controle_alsa(21, (int) value); // numid = 21, iface = MIXER, name = 'ADC Capture Volume'
 
 }
 

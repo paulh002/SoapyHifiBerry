@@ -28,9 +28,6 @@
     <ClCompile Include="AudioOutput.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="RtAudio.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
     <ClCompile Include="si5351.cpp">
       <Filter>Source files</Filter>
     </ClCompile>

@@ -34,6 +34,8 @@
 #define CLK_VFO_TX SI5351_CLK1
 #define CLK_NA SI5351_CLK2
 
+const int hifiBerry_BufferSize = 2048;
+
 typedef enum hifiberrysdrStreamFormat
 {
 	HIFIBERRY_SDR_CF32,
@@ -157,19 +159,18 @@ class SoapyHifiBerry : public SoapySDR::Device
 	SoapySDR::Range getGainRange(const int direction, const size_t channel) const;
 
   private:
-	double sample_rate;
 	int rx_frequency;
 	int no_channels;
 	std::mutex send_command;
 	bool i2c_available;
 	std::vector<sdr_stream *> streams;
 
-	unique_ptr<AudioOutput> uptr_audiooutput;
-	unique_ptr<AudioInput> uptr_audioinput;
+	unique_ptr<HifiBerryAudioOutputput> uptr_HifiBerryAudioOutputput;
+	unique_ptr<HifiBerryAudioInput> uptr_HifiBerryAudioInput;
 	unique_ptr<cfg::File> uptr_cfg;
 
-	DataBuffer<IQSample> source_buffer_rx;
-	DataBuffer<IQSample> source_buffer_tx;
+	SoapyHifiBerryDataBuffer<IQSample> source_buffer_rx;
+	SoapyHifiBerryDataBuffer<IQSample> source_buffer_tx;
 	unique_ptr<Si5351> pSI5351;
 
 	int get_int(string section, string key);

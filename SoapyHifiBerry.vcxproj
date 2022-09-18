@@ -52,7 +52,7 @@
       <PreprocessorDefinitions>DEBUG=1;__LINUX_ALSA__;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions />
       <CLanguageStandard />
-      <CPPLanguageStandard />
+      <CPPLanguageStandard>CPP1Z</CPPLanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLinkerInputs>%(Link.AdditionalLinkerInputs)</AdditionalLinkerInputs>
@@ -66,6 +66,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>;%(ClCompile.AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG=1;RELEASE=1;__LINUX_ALSA__;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CPPLanguageStandard>CPP1Z</CPPLanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLinkerInputs>;%(Link.AdditionalLinkerInputs)</AdditionalLinkerInputs>
@@ -79,7 +80,6 @@
     <ClCompile Include="AudioOutput.cpp" />
     <ClCompile Include="configfile.cpp" />
     <ClCompile Include="configoption.cpp" />
-    <ClCompile Include="RtAudio.cpp" />
     <ClCompile Include="si5351.cpp" />
     <ClCompile Include="SoapyHifiBerry.cpp" />
     <ClCompile Include="SoapyHifiBerrySettings.cpp" />

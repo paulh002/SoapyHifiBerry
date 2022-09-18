@@ -11,18 +11,16 @@
 #include "Audiodefs.h"
 #include "DataBuffer.h"
 
-extern const int audio_buffer_size;
-
-class AudioOutput :
+class HifiBerryAudioOutputput :
     public RtAudio
 {
 public:
-  AudioOutput(int pcmrate, DataBuffer<IQSample> *AudioBuffer, RtAudio::Api api = UNSPECIFIED);
+  HifiBerryAudioOutputput(int pcmrate, SoapyHifiBerryDataBuffer<IQSample> *AudioBuffer, RtAudio::Api api = UNSPECIFIED);
   bool open(std::string device);
   bool write(IQSampleVector &samples);
   void adjust_gain(SampleVector &samples);
   void close();
-  ~AudioOutput();
+  ~HifiBerryAudioOutputput();
   double get_volume() { return m_volume; }
   void set_volume(int vol);
   unsigned int get_framesize() { return bufferFrames; }
@@ -41,11 +39,11 @@ public:
 protected:
 	void samplesToInt16(const SampleVector& samples,
 		std::vector<std::uint8_t>& bytes);
-
+	
 private:
 	RtAudio::StreamParameters	parameters;
 	RtAudio::DeviceInfo			info;
-	DataBuffer<IQSample>		*databuffer;
+	SoapyHifiBerryDataBuffer<IQSample>		*databuffer;
 	unsigned int				m_sampleRate;
 	unsigned int				bufferFrames;  // 256 sample frames
 	double						m_volume;
@@ -54,5 +52,3 @@ private:
 	int alsa_device;
 	map<int, std::string> device_map;
 };
-
-int controle_alsa(int device, int element, int ivalue);

@@ -30,4 +30,4 @@ SoapySDR::Device *makeMyHifiBerry(const SoapySDR::Kwargs &args)
 /***********************************************************************
  * Registration
  **********************************************************************/
-static SoapySDR::Registry registerRadioberry("hifiberry", &findMyHifiBerry, &makeMyHifiBerry, SOAPY_SDR_ABI_VERSION);
+static SoapySDR::Registry registerHifiberry("hifiberry", &findMyHifiBerry, &makeMyHifiBerry, SOAPY_SDR_ABI_VERSION);

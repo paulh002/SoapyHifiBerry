@@ -1,4 +1,5 @@
 #pragma once
+#include "AudioInput.h"
 #include "RtAudio.h"
 #include <string>
 #include <iostream>
@@ -7,18 +8,18 @@
 #include "Audiodefs.h"
 #include "DataBuffer.h"
 
-class AudioInput : public RtAudio
+class HifiBerryAudioInput : public RtAudio
 {
 public:
-  AudioInput(unsigned int pcmrate, bool stereo, DataBuffer<IQSample> *AudioBuffer, RtAudio::Api api = UNSPECIFIED);
+  HifiBerryAudioInput(unsigned int pcmrate, bool stereo, SoapyHifiBerryDataBuffer<IQSample> *AudioBuffer, RtAudio::Api api = UNSPECIFIED);
   bool open(std::string device);
   void adjust_gain(IQSampleVector &samples);
   bool read(IQSampleVector &samples);
   void close();
-  ~AudioInput();
+  ~HifiBerryAudioInput();
   double get_volume() { return m_volume; }
   void set_volume(int vol);
-  DataBuffer<IQSample> *get_databuffer() { return databuffer; };
+  SoapyHifiBerryDataBuffer<IQSample> *get_databuffer() { return databuffer; };
   bool get_stereo() { return m_stereo; };
   int queued_samples();
   int getDevices(std::string device);
@@ -35,13 +36,10 @@ private:
 	unsigned int				sampleRate;
 	unsigned int				bufferFrames;
 	double						m_volume;
-	DataBuffer<IQSample>		*databuffer;
+	SoapyHifiBerryDataBuffer<IQSample>		*databuffer;
 	string						m_error;
 	long						asteps;
 	bool						m_stereo;
 	int							tune_tone;
 	int							gaindb;
 };
-
-extern  AudioInput  *audio_input;
-extern atomic_bool	audio_input_on;

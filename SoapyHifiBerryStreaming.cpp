@@ -171,24 +171,29 @@ int SoapyHifiBerry::readStream(
 	
 	if (ptr->get_stream_format() == HIFIBERRY_SDR_CF32)
 	{
-		uptr_audioinput->read(iqsamples);
-		for (auto con : iqsamples)
+		if (uptr_HifiBerryAudioInput->read(iqsamples))
 		{
-			IQSample iq = con;
-			if (delay > 0)
+			for (auto con : iqsamples)
 			{
-				delay_queue.push(iq.real());
-				iq.real(0.0);
-				if (delay_queue.size() == delay)
+				IQSample iq = con;
+				//printf("Iqsample %d nr_samples %d size %lu\n", ii, nr_samples, iqsamples.size());
+			
+				if (delay > 0)
 				{
-					iq.real(delay_queue.front());
-					delay_queue.pop();
+					delay_queue.push(iq.real());
+					iq.real(0.0);
+					if (delay_queue.size() == delay)
+					{
+						iq.real(delay_queue.front());
+						delay_queue.pop();
+					}
 				}
+					target_buffer[nr_samples++] = iq;
+				//printf("I %f, Q %f\n", con.real(), con.imag());
 			}
-			target_buffer[nr_samples++] = iq;
-			//printf("I %f, Q %f\n", con.real(), con.imag());
 		}
 	}
+	//printf("SoapyHifiBerry samples overflow %d size %lu\n", nr_samples, iqsamples.size());
 	//printf("nr_samples %d sample: %d %d \n", nr_samples, left_sample, right_sample);
 	return (nr_samples); //return the number of IQ samples
 }
@@ -208,8 +213,8 @@ int SoapyHifiBerry::writeStream(SoapySDR::Stream *handle, const void *const *buf
 		for (int i = 0; i < numElems; i++)
 		{
 			iqsamples.push_back(target_buffer[i]);
-			if (iqsamples.size() == audio_buffer_size)
-				uptr_audiooutput->write(iqsamples);
+			if (iqsamples.size() == hifiBerry_BufferSize)
+				uptr_HifiBerryAudioOutputput->write(iqsamples);
 		}
 	}
 	return numElems;

@@ -1,16 +1,16 @@
+#include "SoapyHifiBerry.h"
 #include "AudioInput.h"
 
 #define dB2mag(x) pow(10.0, (x) / 20.0)
 
-int record(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames, double streamTime, RtAudioStreamStatus status, void *userData)
+int HifiBerryAudioInput_record(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames, double streamTime, RtAudioStreamStatus status, void *userData)
 {
-	AudioInput					*audioinput = (AudioInput *)userData ;
-	DataBuffer<IQSample>		*databuffer = audioinput->get_databuffer();
+	HifiBerryAudioInput						*hifiberryAudioInput = (HifiBerryAudioInput *)userData;
+	SoapyHifiBerryDataBuffer<IQSample>		*databuffer = hifiberryAudioInput->get_databuffer();
 	
 	if (status)
 		std::cout << "Stream overflow detected!" << std::endl;
-
-	//printf("frames %u \n", nBufferFrames);
+	
 	IQSampleVector	buf;
 	for (int i = 0; i < nBufferFrames; i++)
 	{
@@ -23,7 +23,7 @@ int record(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames, do
 }
 
 
-void AudioInput::listDevices(std::vector<std::string> &devices)
+void HifiBerryAudioInput::listDevices(std::vector<std::string> &devices)
 {
 	int noDevices = this->getDeviceCount();
 	struct DeviceInfo	dev;
@@ -40,7 +40,7 @@ void AudioInput::listDevices(std::vector<std::string> &devices)
 	}
 }
 
-int AudioInput::getDevices(std::string device)
+int HifiBerryAudioInput::getDevices(std::string device)
 {
 	int noDevices = this->getDeviceCount();
 		
@@ -63,7 +63,7 @@ int AudioInput::getDevices(std::string device)
 	return 0; // return default device
 }
 
-AudioInput::AudioInput(unsigned int pcmrate, bool stereo, DataBuffer<IQSample> *AudioBuffer, RtAudio::Api api)
+HifiBerryAudioInput::HifiBerryAudioInput(unsigned int pcmrate, bool stereo, SoapyHifiBerryDataBuffer<IQSample> *AudioBuffer, RtAudio::Api api)
 	: RtAudio(api), parameters{}, m_volume{0.5}, asteps{}, tune_tone{0}
 {
 	m_stereo = stereo;
@@ -71,11 +71,12 @@ AudioInput::AudioInput(unsigned int pcmrate, bool stereo, DataBuffer<IQSample> *
 	parameters.nChannels = 2;
 	parameters.firstChannel = 0;
 	sampleRate = pcmrate;
-	bufferFrames = 2048;
+	bufferFrames = hifiBerry_BufferSize;
 	gaindb = 0;
+	databuffer->clear();
 }
 
-std::vector<RtAudio::Api> AudioInput::listApis()
+std::vector<RtAudio::Api> HifiBerryAudioInput::listApis()
 {
 	std::vector<RtAudio::Api> apis;
 	RtAudio ::getCompiledApi(apis);
@@ -88,7 +89,7 @@ std::vector<RtAudio::Api> AudioInput::listApis()
 	return apis;
 }
 
-bool AudioInput::open(std::string device)
+bool HifiBerryAudioInput::open(std::string device)
 {
 	RtAudioErrorType err;
 
@@ -98,43 +99,43 @@ bool AudioInput::open(std::string device)
 		return false;
 	}
 	parameters.nChannels = 2; //	info.inputChannels;
-	err = this->openStream(NULL, &parameters, RTAUDIO_FLOAT64, sampleRate, &bufferFrames, &record, (void *)this);
+	err = this->openStream(NULL, &parameters, RTAUDIO_FLOAT64, sampleRate, &bufferFrames, &HifiBerryAudioInput_record, (void *)this);
 	if (err != RTAUDIO_NO_ERROR)
 	{
-		printf("Cannot open audio input stream\n");
+		printf("HifiBerry Cannot open audio input stream\n");
 		return false;
 	}
 	this->startStream();
-	printf("audio input device = %d %s samplerate %d\n", parameters.deviceId, device.c_str(), sampleRate);
+	printf("HifiBerry audio input device = %d %s samplerate %d bufferFrames %d\n", parameters.deviceId, device.c_str(), sampleRate, bufferFrames);
 	return true;	
 }
 
-bool AudioInput::open(unsigned int device)
+bool HifiBerryAudioInput::open(unsigned int device)
 {
 	RtAudioErrorType err;
 
 	parameters.deviceId = device;
 	info = getDeviceInfo(device);
 	parameters.nChannels = 2; //	info.inputChannels;
-	err = this->openStream(NULL, &parameters, RTAUDIO_FLOAT32, sampleRate, &bufferFrames, &record, (void *)this);
+	err = this->openStream(NULL, &parameters, RTAUDIO_FLOAT32, sampleRate, &bufferFrames, &HifiBerryAudioInput_record, (void *)this);
 	if (err != RTAUDIO_NO_ERROR)
 	{
-		printf("Cannot open audio input stream\n");
+		printf("HifiBerry Cannot open audio input stream\n");
 		return false;
 	}
 	this->startStream();
-	printf("audio input device = %d %s samplerate %d\n", parameters.deviceId, info.name.c_str(), sampleRate);
+	printf("HifiBerry audio input device = %d samplerate %d bufferFrames %d\n", parameters.deviceId, sampleRate, bufferFrames);
 	return true;
 }
 
-void AudioInput::set_volume(int vol)
+void HifiBerryAudioInput::set_volume(int vol)
 {
 	// log volume
 	m_volume = exp(((double)vol * 6.908) / 100.0) / 5.0;
 	printf("mic vol %f\n", (float)m_volume);
 }
 
-void AudioInput::adjust_gain(IQSampleVector& samples)
+void HifiBerryAudioInput::adjust_gain(IQSampleVector& samples)
 {
 	for (unsigned int i = 0, n = samples.size(); i < n; i++) {
 		samples[i] *= m_volume * dB2mag(gaindb);
@@ -142,12 +143,16 @@ void AudioInput::adjust_gain(IQSampleVector& samples)
 }
 
 
-bool AudioInput::read(IQSampleVector& samples)
+bool HifiBerryAudioInput::read(IQSampleVector& samples)
 {
 	if (databuffer == nullptr)
 		return false;
+	
 	if (!isStreamOpen())
+	{
+		printf("Stream Closed \n");
 		return false;
+	}
 	samples = databuffer->pull();
 	if (samples.empty())
 		return false;
@@ -155,13 +160,13 @@ bool AudioInput::read(IQSampleVector& samples)
 	return true;
 }
 
-void AudioInput::close()
+void HifiBerryAudioInput::close()
 {
 	if (isStreamOpen()) 
 		closeStream();
 }
 
-AudioInput::~AudioInput()
+HifiBerryAudioInput::~HifiBerryAudioInput()
 {
 	close();
 }

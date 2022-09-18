@@ -1,24 +1,24 @@
+#include "SoapyHifiBerry.h"
 #include "AudioOutput.h"
 #include "alsa/asoundlib.h"
 
 /*
- * Audioout fills the audio output buffer.
+ * HifiBerryAudioOutput fills the audio output buffer.
  * If there are no samples available (underrun) mutted sound is send
  * Sound data is pulled from databuffer and copied to rtaudio buffer
  * A underrun counter is increased for adjusting samplerate of the radio
  **/
 
-const int audio_buffer_size{2024};
 
-int Audioout( void *outputBuffer,void *inputBuffer,unsigned int nBufferFrames,double streamTime,RtAudioStreamStatus status,	void *userData)
+int HifiBerryAudioOutput_Audioout( void *outputBuffer,void *inputBuffer,unsigned int nBufferFrames,double streamTime,RtAudioStreamStatus status,	void *userData)
 {
 	IQSample *buffer = (IQSample *) outputBuffer;
 	
 	if (status)
 		std::cout << "Stream underflow detected!\n" << std::endl;
 	// Write interleaved audio data.
-	
-	if(((DataBuffer<IQSample> *)userData)->queued_samples() == 0)
+
+	if (((SoapyHifiBerryDataBuffer<IQSample> *)userData)->queued_samples() == 0)
 	{
 		for (int i = 0; i < nBufferFrames; i++)
 		{
@@ -26,7 +26,7 @@ int Audioout( void *outputBuffer,void *inputBuffer,unsigned int nBufferFrames,do
 		}
 		return 0;
 	}
-	IQSampleVector samples = ((DataBuffer<IQSample> *)userData)->pull();
+	IQSampleVector samples = ((SoapyHifiBerryDataBuffer<IQSample> *)userData)->pull();
 	int i = 0;
 	for (auto& col : samples)
 	{
@@ -41,7 +41,7 @@ int Audioout( void *outputBuffer,void *inputBuffer,unsigned int nBufferFrames,do
 *
 **/
 
-void AudioOutput::listDevices(std::vector<std::string> &devices)
+void HifiBerryAudioOutputput::listDevices(std::vector<std::string> &devices)
 {
 	for (auto const &dev : device_map)
 	{
@@ -56,7 +56,7 @@ void AudioOutput::listDevices(std::vector<std::string> &devices)
 * 
 */
 
-int AudioOutput::getDevices(std::string device)
+int HifiBerryAudioOutputput::getDevices(std::string device)
 {
 	RtAudio::DeviceInfo		dev_info;
 	int noDevices = this->getDeviceCount();
@@ -80,14 +80,13 @@ int AudioOutput::getDevices(std::string device)
 	return retval; // return default device
 }
 
-
-AudioOutput::AudioOutput(int pcmrate, DataBuffer<IQSample> *AudioBuffer, RtAudio::Api api)
+HifiBerryAudioOutputput::HifiBerryAudioOutputput(int pcmrate, SoapyHifiBerryDataBuffer<IQSample> *AudioBuffer, RtAudio::Api api)
 	: RtAudio(api),
 	  parameters{}, bufferFrames{}, m_volume{}, underrun{0}, info{0}
 {
 	m_sampleRate = pcmrate;
 	databuffer = AudioBuffer;
-	bufferFrames = audio_buffer_size;
+	bufferFrames = hifiBerry_BufferSize;
 	parameters.nChannels = 2;
 	parameters.firstChannel = 0;
 	parameters.deviceId = 0;
@@ -100,7 +99,7 @@ AudioOutput::AudioOutput(int pcmrate, DataBuffer<IQSample> *AudioBuffer, RtAudio
  * Use samplerate which is optimized for device 
  **/
 
-bool AudioOutput::open(std::string device)
+bool HifiBerryAudioOutputput::open(std::string device)
 {
 	int retry{0};
 	RtAudioErrorType err;
@@ -126,8 +125,8 @@ bool AudioOutput::open(std::string device)
 	info = this->getDeviceInfo(parameters.deviceId);
 	alsa_device = parameters.deviceId - 1;
 	parameters.nChannels = info.outputChannels;
-	printf("audio device = %d %s samplerate %d channels %d\n", parameters.deviceId, device.c_str(), m_sampleRate, parameters.nChannels);
-	err = this->openStream(&parameters, NULL, RTAUDIO_FLOAT32, m_sampleRate, &bufferFrames, &Audioout, (void *)databuffer, NULL);
+	printf("HifiBerry audio device = %d %s samplerate %d channels %d\n", parameters.deviceId, device.c_str(), m_sampleRate, parameters.nChannels);
+	err = this->openStream(&parameters, NULL, RTAUDIO_FLOAT32, m_sampleRate, &bufferFrames, &HifiBerryAudioOutput_Audioout, (void *)databuffer, NULL);
 	if (err != RTAUDIO_NO_ERROR)
 	{
 		printf("Cannot open audio output stream\n");
@@ -140,21 +139,21 @@ bool AudioOutput::open(std::string device)
 /*
  * Set volume of output use log scale
  **/
-void AudioOutput::set_volume(int vol) 
+void HifiBerryAudioOutputput::set_volume(int vol) 
 {
 	// log volume
 	m_volume = exp(((double)vol * 6.908) / 100.0) / 1000;
 	//fprintf(stderr,"vol %f\n", (float)m_volume);
 } 
 
-void AudioOutput::adjust_gain(SampleVector& samples)
+void HifiBerryAudioOutputput::adjust_gain(SampleVector& samples)
 {
 	for (unsigned int i = 0, n = samples.size(); i < n; i++) {
 		samples[i] *= m_volume;
 	}
 }
 
-void AudioOutput::close()
+void HifiBerryAudioOutputput::close()
 {
 	if (isStreamOpen()) 
 	{
@@ -163,7 +162,7 @@ void AudioOutput::close()
 	}
 }
 
-AudioOutput::~AudioOutput()
+HifiBerryAudioOutputput::~HifiBerryAudioOutputput()
 {
 	close();
 }
@@ -172,7 +171,7 @@ AudioOutput::~AudioOutput()
  * Write data to audio buffer
  **/
 
-bool AudioOutput::write(IQSampleVector& audiosamples)
+bool HifiBerryAudioOutputput::write(IQSampleVector& audiosamples)
 {
 	if (databuffer && isStreamOpen())
 		databuffer->push(move(audiosamples));
@@ -181,7 +180,7 @@ bool AudioOutput::write(IQSampleVector& audiosamples)
 	return true;
 }
 
-int	 AudioOutput::queued_samples()
+int	 HifiBerryAudioOutputput::queued_samples()
 {
 	if (databuffer != nullptr)
 		return databuffer->queued_samples();
@@ -194,7 +193,7 @@ int	 AudioOutput::queued_samples()
  *
  **/
 
-unsigned int AudioOutput::getDevices()
+unsigned int HifiBerryAudioOutputput::getDevices()
 {
 	unsigned nDevices = 0;
 	int result, subdevice, card;
@@ -219,7 +218,7 @@ unsigned int AudioOutput::getDevices()
 		if (result < 0)
 		{
 			handle = 0;
-			cout << "AudioOutput::getDevices: control open, card = " << card << ", " << snd_strerror(result) << "." << endl;
+			cout << "HifiBerryAudioOutputput::getDevices: control open, card = " << card << ", " << snd_strerror(result) << "." << endl;
 			goto nextcard;
 		}
 		subdevice = -1;
@@ -239,7 +238,7 @@ unsigned int AudioOutput::getDevices()
 			result = snd_ctl_pcm_next_device(handle, &subdevice);
 			if (result < 0)
 			{
-				cout << "AudioOutput::getDevices: control next device, card = " << card << ", " << snd_strerror(result) << "." << endl;
+				cout << "HifiBerryAudioOutputput::getDevices: control next device, card = " << card << ", " << snd_strerror(result) << "." << endl;
 				break;
 			}
 			if (subdevice < 0)
@@ -271,7 +270,7 @@ int lookup_id(snd_ctl_elem_id_t* id, snd_ctl_t* handle)
 	return 0;
 }
 
-int AudioOutput::controle_alsa(int element, int ivalue)
+int HifiBerryAudioOutputput::controle_alsa(int element, int ivalue)
 {
 	char	str[80];
 	int err;

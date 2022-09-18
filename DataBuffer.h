@@ -15,11 +15,11 @@ using namespace std;
 
 /** Buffer to move sample data between threads. */
 template <class Element>
-	class DataBuffer
+	class SoapyHifiBerryDataBuffer
 	{
 	public:
 		/** Constructor. initialize members */
-		DataBuffer(string name = "")
+	  SoapyHifiBerryDataBuffer(string name = "")
 			: m_qlen(0)
 			, m_end_marked(false)
 		{}
@@ -140,7 +140,7 @@ template <class Element>
 	};
 
 	template <class Element>
-	class DataQueue
+	class SoapyHifiBerryDataQueue
 	{
 	  public:
 		/** Add samples to the queue. */
