@@ -29,6 +29,11 @@ string SoapyHifiBerry::get_string(string section, string key)
 	return st;
 }
 
+size_t SoapyHifiBerry::getStreamMTU(SoapySDR::Stream *stream) const
+{
+	return 2048;
+}
+
 SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 {
 

@@ -42,6 +42,7 @@
 /*!
   \file RtAudio.h
  */
+
 #ifndef __RTAUDIO_H
 #define __RTAUDIO_H
 

@@ -10,6 +10,7 @@
 #include <map>
 #include "Audiodefs.h"
 #include "DataBuffer.h"
+#include "alsa/asoundlib.h"
 
 class HifiBerryAudioOutputput :
     public RtAudio
@@ -32,9 +33,10 @@ public:
   int  get_underrun() { return underrun.load(); }
   int get_channels() { return info.outputChannels; }
   unsigned int get_samplerate() { return m_sampleRate; }
-  unsigned int getDevices();
+  unsigned int find_device(std::string name);
   unsigned int get_device() { return parameters.deviceId;}
   int controle_alsa(int element, int ivalue);
+  int lookup_id(snd_ctl_elem_id_t *id, snd_ctl_t *handle);
 
 protected:
 	void samplesToInt16(const SampleVector& samples,

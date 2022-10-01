@@ -94,6 +94,7 @@ class SoapyHifiBerry : public SoapySDR::Device
 
 	SoapySDR::ArgInfoList getStreamArgsInfo(const int direction, const size_t channel) const;
 
+	size_t getStreamMTU(SoapySDR::Stream *stream) const;
 	void closeStream(SoapySDR::Stream *stream);
 	void deactivateStream(SoapySDR::Stream *stream);
 
