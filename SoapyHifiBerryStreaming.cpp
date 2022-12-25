@@ -123,18 +123,20 @@ SoapySDR::Stream *SoapyHifiBerry::setupStream(
 	return (SoapySDR::Stream *)ptr;
 }
 
-void SoapyHifiBerry::deactivateStream(SoapySDR::Stream *stream)
+int SoapyHifiBerry::deactivateStream(SoapySDR::Stream *stream, const int flags,  const long long timeNs)
 {
-	int i = 0;
-	for (auto con : streams)
+	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::deactivateStream called ");
+	sdr_stream *ptr = (sdr_stream *)stream;
+
+	if (ptr != nullptr)
 	{
-		if ((sdr_stream *)stream == con)
+		if (ptr->get_direction() == SOAPY_SDR_TX)
 		{
-			if (con->get_direction() == SOAPY_SDR_TX)
-				pSI5351->output_enable(CLK_VFO_TX, 0);
+			SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::deactivateStream disable TX ");
+			pSI5351->output_enable(CLK_VFO_TX, 0);
 		}
-		i++;
 	}
+	return 0;
 }
 
 void SoapyHifiBerry::closeStream(SoapySDR::Stream *stream)
@@ -144,6 +146,7 @@ void SoapyHifiBerry::closeStream(SoapySDR::Stream *stream)
 	{
 		if ((sdr_stream *)stream == con)
 		{
+			SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::closeStream delete ");
 			delete ((sdr_stream *)stream);
 			streams.erase(streams.begin() + i);
 		}

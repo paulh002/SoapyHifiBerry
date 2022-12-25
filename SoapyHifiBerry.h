@@ -96,8 +96,9 @@ class SoapyHifiBerry : public SoapySDR::Device
 
 	size_t getStreamMTU(SoapySDR::Stream *stream) const;
 	void closeStream(SoapySDR::Stream *stream);
-	void deactivateStream(SoapySDR::Stream *stream);
+	int deactivateStream(SoapySDR::Stream *stream, const int flags = 0, const long long timeNs = 0);
 
+	
 	SoapySDR::Stream *setupStream(
 		const int direction,
 		const std::string &format,
