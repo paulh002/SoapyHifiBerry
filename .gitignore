@@ -32,7 +32,12 @@ bld/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
-Archive/
+**/.visualgdb/
+**/sdrberry-cppcheck-build-dir
+**/doc
+**/archive
+**/images
+**/ProfilingReports
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
