@@ -177,4 +177,5 @@ class SoapyHifiBerry : public SoapySDR::Device
 
 	int get_int(string section, string key);
 	string get_string(string section, string key);
+	si5351_drive txDrive, rxDrive;
 };

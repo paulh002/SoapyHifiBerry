@@ -5,8 +5,8 @@
  * Device interface
  **********************************************************************/
 const cfg::File::ConfigMap defaultOptions = {
-	{"si5351", {{"correction", cfg::makeOption("0")}}},
-	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")} }}
+	{"si5351", {{"correction", cfg::makeOption("0")}, {"rxdrive", cfg::makeOption("2")}, {"txdrive", cfg::makeOption("2")}}},
+	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")}}}
 };
 
 int SoapyHifiBerry::get_int(string section, string key)
@@ -40,6 +40,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	SoapySDR_setLogLevel(SOAPY_SDR_INFO);
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::SoapyHifiBerry  constructor called");
 	no_channels = 1;
+	txDrive  = rxDrive = SI5351_DRIVE_2MA;
 
 	uptr_cfg = make_unique<cfg::File>();
 	if (!uptr_cfg->loadFromFile("hifiberry.cfg"))
@@ -48,7 +49,41 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		uptr_cfg->writeToFile("hifiberry.cfg");
 	}
 	int samplerate = SoapyHifiBerry::get_int("sound", "samplerate");
+
+	int driveConfig = SoapyHifiBerry::get_int("si5351", "rxdrive");
+	switch (driveConfig)
+	{
+	case 2:
+		rxDrive = SI5351_DRIVE_2MA;
+		break;
+	case 4:
+		rxDrive = SI5351_DRIVE_4MA;
+		break;
+	case 8:
+		rxDrive = SI5351_DRIVE_8MA;
+		break;
+	default:
+		rxDrive = SI5351_DRIVE_2MA;
+		break;
+	}
 	
+	driveConfig = SoapyHifiBerry::get_int("si5351", "txdrive");
+	switch (driveConfig)
+	{
+	case 2:
+		txDrive = SI5351_DRIVE_2MA;
+		break;
+	case 4:
+		txDrive = SI5351_DRIVE_4MA;
+		break;
+	case 8:
+		txDrive = SI5351_DRIVE_8MA;
+		break;
+	default:
+		txDrive = SI5351_DRIVE_2MA;
+		break;
+	}
+
 	uptr_HifiBerryAudioOutputput = make_unique<HifiBerryAudioOutputput>(samplerate, &source_buffer_tx, RtAudio::LINUX_ALSA);
 	uptr_HifiBerryAudioInput = make_unique<HifiBerryAudioInput>(samplerate, true, &source_buffer_rx, RtAudio::LINUX_ALSA);
 
@@ -72,8 +107,8 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	{
 		cout << "si5351 found" << endl;
 		pSI5351->set_correction((long)corr, SI5351_PLL_INPUT_XO);
-		pSI5351->drive_strength(CLK_VFO_RX, SI5351_DRIVE_2MA);
-		pSI5351->drive_strength(CLK_VFO_TX, SI5351_DRIVE_2MA);
+		pSI5351->drive_strength(CLK_VFO_RX, rxDrive);
+		pSI5351->drive_strength(CLK_VFO_TX, txDrive);
 		pSI5351->output_enable(CLK_VFO_RX, 1);
 		pSI5351->output_enable(CLK_VFO_TX, 0);
 		pSI5351->output_enable(CLK_NA, 0);
