@@ -90,6 +90,8 @@ HifiBerryAudioOutputput::HifiBerryAudioOutputput(int pcmrate, SoapyHifiBerryData
 	parameters.nChannels = 2;
 	parameters.firstChannel = 0;
 	parameters.deviceId = 0;
+	DigitalPlaybackMin = 0;
+	DigitalPlaybackMax = 100;
 }
 
 /*
@@ -123,6 +125,7 @@ bool HifiBerryAudioOutputput::open(std::string device)
 		printf("Cannot open audio output stream\n");
 		return false;
 	}
+	get_alsa_range(1, "Digital Playback Volume");
 	this->startStream();
 	return true;	
 }
@@ -248,6 +251,49 @@ int HifiBerryAudioOutputput::controle_alsa(int element, int ivalue)
 		return err;
 	}
 	snd_ctl_close(handle);
+	return 0;
+}
+
+int HifiBerryAudioOutputput::get_alsa_range(int element, std::string name)
+{
+	char str[80];
+	snd_ctl_t *ctl;
+	snd_ctl_elem_id_t *id;
+	snd_ctl_elem_info_t *info;
+	snd_ctl_elem_value_t *control;
+	int err;
+
+	snd_ctl_elem_id_alloca(&id);
+	snd_ctl_elem_info_alloca(&info);
+	snd_ctl_elem_value_alloca(&control);
+
+	// Open the control interface for the specified sound card
+	sprintf(str, "hw:%d", alsa_device);
+	if ((err = snd_ctl_open(&ctl, str, 0)) < 0)
+	{
+		printf("Error opening control interface: %s\n", snd_strerror(err));
+		return err;
+	}
+
+	// Set the ID of the element we want to retrieve information for
+	snd_ctl_elem_id_set_interface(id, SND_CTL_ELEM_IFACE_MIXER);
+	snd_ctl_elem_id_set_name(id, name.c_str());
+
+	// Retrieve the element information
+	snd_ctl_elem_info_set_id(info, id);
+	if ((err = snd_ctl_elem_info(ctl, info)) < 0)
+	{
+		printf("Error retrieving element info: %s\n", snd_strerror(err));
+		snd_ctl_close(ctl);
+		return err;
+	}
+
+	// Retrieve the element range
+	DigitalPlaybackMin = snd_ctl_elem_info_get_min(info);
+	DigitalPlaybackMax = snd_ctl_elem_info_get_max(info);
+	printf("Digital Playback Volume range: [%ld, %ld]\n", DigitalPlaybackMin, DigitalPlaybackMax);
+
+	snd_ctl_close(ctl);
 	return 0;
 }
 

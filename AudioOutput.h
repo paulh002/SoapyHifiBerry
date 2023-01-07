@@ -37,6 +37,8 @@ public:
   unsigned int get_device() { return parameters.deviceId;}
   int controle_alsa(int element, int ivalue);
   int lookup_id(snd_ctl_elem_id_t *id, snd_ctl_t *handle);
+  int get_alsa_range(int element, std::string name);
+  int get_max_volume() { return DigitalPlaybackMax; }
 
 protected:
 	void samplesToInt16(const SampleVector& samples,
@@ -53,4 +55,5 @@ private:
 	atomic<int>					underrun;
 	int alsa_device;
 	map<int, std::string> device_map;
+	long DigitalPlaybackMin, DigitalPlaybackMax;
 };

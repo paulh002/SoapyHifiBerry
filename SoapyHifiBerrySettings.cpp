@@ -5,7 +5,7 @@
  * Device interface
  **********************************************************************/
 const cfg::File::ConfigMap defaultOptions = {
-	{"si5351", {{"correction", cfg::makeOption("0")}, {"rxdrive", cfg::makeOption("2")}, {"txdrive", cfg::makeOption("2")}}},
+	{"si5351", {{"correction", cfg::makeOption("0")}, {"rxdrive", cfg::makeOption("2")}, {"t.xdrive", cfg::makeOption("2")}}},
 	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")}}}
 };
 
@@ -267,12 +267,25 @@ SoapySDR::Range SoapyHifiBerry::getGainRange(const int direction, const size_t c
 
 void SoapyHifiBerry::setGain(const int direction, const size_t channel, const double value)
 {
-
-	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::setGain called");
+	char str[80];
+	sprintf(str, "SoapyHifiBerry::setGain called %f", value * 2.4);
+	SoapySDR_log(SOAPY_SDR_INFO, str);
 
 	if (direction == SOAPY_SDR_RX)
 		uptr_HifiBerryAudioOutputput->controle_alsa(21, (int) value); // numid = 21, iface = MIXER, name = 'ADC Capture Volume'
 
+	if (direction == SOAPY_SDR_TX)
+	{
+		if (value < 99.9)
+		{
+			float factor = uptr_HifiBerryAudioOutputput->get_max_volume() / 100.0;
+			uptr_HifiBerryAudioOutputput->controle_alsa(1, (int)(value * factor)); //numid = 1, iface = MIXER, name = 'Digital Playback Volume'
+		}
+		else
+		{
+			uptr_HifiBerryAudioOutputput->controle_alsa(1, uptr_HifiBerryAudioOutputput->get_max_volume()); //numid = 1, iface = MIXER, name = 'Digital Playback Volume'
+		}
+	}
 }
 
 /*******************************************************************
