@@ -6,7 +6,7 @@
  **********************************************************************/
 const cfg::File::ConfigMap defaultOptions = {
 	{"si5351", {{"correction", cfg::makeOption("0")}, {"rxdrive", cfg::makeOption("2")}, {"t.xdrive", cfg::makeOption("2")}}},
-	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")}}}
+	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")}, {"input", cfg::makeOption("DIFF")}}}
 };
 
 int SoapyHifiBerry::get_int(string section, string key)
@@ -101,6 +101,24 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	
 	uptr_HifiBerryAudioOutputput->open(dev);
 	uptr_HifiBerryAudioInput->open(uptr_HifiBerryAudioOutputput->get_device());
+
+	string inputSetting = get_string("sound", "input");
+	inputSetting = strlib::toUpper(inputSetting);
+	if (inputSetting == "DIFF")
+	{
+		//numid = 24, iface = MIXER, name = 'ADC Right Input'
+		//numid = 23, iface = MIXER, name = 'ADC Left Input'
+		//uptr_HifiBerryAudioInput->SetInputLine(true);
+		uptr_HifiBerryAudioOutputput->controle_alsa(24, 4);
+		uptr_HifiBerryAudioOutputput->controle_alsa(23, 4);
+	}
+	else
+	{
+		uptr_HifiBerryAudioOutputput->controle_alsa(24, 1);
+		uptr_HifiBerryAudioOutputput->controle_alsa(23, 1);
+	}
+	//numid = 25, iface = MIXER, name = 'ADC Mic Bias'
+	uptr_HifiBerryAudioOutputput->controle_alsa(25, 0);
 
 	pSI5351 = make_unique<Si5351>("/dev/i2c-1",SI5351_BUS_BASE_ADDR);
 	if (pSI5351->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0))
@@ -261,18 +279,18 @@ SoapySDR::Range SoapyHifiBerry::getGainRange(const int direction, const size_t c
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::getGainRange called");
 
 	if (direction == SOAPY_SDR_RX)
-		return (SoapySDR::Range(0, 100));
+		return rxGain;
 	return (SoapySDR::Range(0, 100));
 }
 
 void SoapyHifiBerry::setGain(const int direction, const size_t channel, const double value)
 {
 	char str[80];
-	sprintf(str, "SoapyHifiBerry::setGain called %f", value * 2.4);
+	sprintf(str, "SoapyHifiBerry::setGain called %f %f", value, (int)value + abs(rxGain.minimum()));
 	SoapySDR_log(SOAPY_SDR_INFO, str);
 
 	if (direction == SOAPY_SDR_RX)
-		uptr_HifiBerryAudioOutputput->controle_alsa(21, (int) value); // numid = 21, iface = MIXER, name = 'ADC Capture Volume'
+		uptr_HifiBerryAudioOutputput->controle_alsa(21, 2 * ((int)value + abs(rxGain.minimum()))); // numid = 21, iface = MIXER, name = 'ADC Capture Volume'
 
 	if (direction == SOAPY_SDR_TX)
 	{
