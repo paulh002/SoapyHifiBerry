@@ -140,6 +140,9 @@ void Si5351::reset(void)
 	si5351_write(22, 0x0c);
 	si5351_write(23, 0x0c);
 
+	// set spread spectrum feature is disabled
+	si5351_write(SI5351_SSC_PARAM0, 0);
+
 	// Set PLLA and PLLB to 800 MHz for automatic tuning
 	set_pll(SI5351_PLL_FIXED, SI5351_PLLA);
 	set_pll(SI5351_PLL_FIXED, SI5351_PLLB);
