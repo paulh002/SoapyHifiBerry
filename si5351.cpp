@@ -40,8 +40,10 @@ extern "C" {
 /* Public functions */
 /********************/
 
-Si5351::Si5351(const char* i2c_device_filepath, uint8_t i2c_addr):
-    i2c_bus_addr(i2c_addr),i2c_file(0),i2c_filepath(i2c_device_filepath)
+Si5351::Si5351(const char *i2c_device_filepath, uint8_t i2c_addr)
+	: i2c_bus_addr(i2c_addr), i2c_file(0), i2c_filepath(i2c_device_filepath)
+																																										  
+																																										  
 {
 	xtal_freq[0] = SI5351_XTAL_FREQ;
 
