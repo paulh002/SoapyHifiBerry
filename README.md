@@ -2,16 +2,13 @@
 The SoapyHifiBerry driver is to use the HifiBerry DAC + ADC (Pro) as a SDR Tranceiver in combination with a Tayloe detector / Mixer.
 The idea and design of the detector is from the book "Software Defined Radio Tranceiver" T41-EP by AC8GY and W8TEE
 I adapted the design for use with Raspberry PI 4B. On the PCB there is a Tayloe mixer FST3253 / SN74CBT3252 and a Si5351 oscilator.
-A SN74HC74 is used to devide the clock by 4 and deliver 90 degree phase shift.
+A SN74HC74 is used to devide the clock by 4 and deliver 90 degree phase shift. Alternative 2 si5351 can be used clock 0 and clock 1 will deliver 90 deg phase shift. A TCA9548 is used to switch the i2c bus.
 The SoapyHifiBerry driver work with my SDR software SDRBERRY https://github.com/paulh002/sdrberry, I did not test it with other SDR software and all is an experiment.
 (SoapyHifiBerry relies on RtAudio library, which is included staticly. This can give problems with applications using also RtAudio but a different version, 
 in that case remove the RtAudio.cpp from SoapyHifiBerry and use correct RtAudio.h)
 
-ToDo:
-- phase correction (if necessary)
-- level correction
-
 Done:
+- Support 2 times Si5351 (RX and TX)
 - Si5351 I2C interface
 - Gain interface
 - Receive IQ signal
