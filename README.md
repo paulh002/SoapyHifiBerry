@@ -71,9 +71,17 @@ SoapyHifiBerry will create config file HifiBerry.cfg Si5351 correction can be co
 ```
 [si5351]
 correction = "50000"
+mode = "single"
 
 [sound]
 device = "snd_rpi_hifiberry_dacplusadcpro"
+```
+
+To enable 2 time si5351
+
+```
+[si5351]
+mode = "IQ"
 ```
 
 
