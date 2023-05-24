@@ -23,6 +23,7 @@
 #include "AudioInput.h"
 #include "AudioOutput.h" 
 #include "si5351.h"
+#include "TCA9548.h"
 #include "configfile.h"
 
 /*-------------------------------------------------------
@@ -33,6 +34,10 @@
 #define CLK_VFO_RX SI5351_CLK0
 #define CLK_VFO_TX SI5351_CLK1
 #define CLK_NA SI5351_CLK2
+
+#define CLK_VFO_I SI5351_CLK0
+#define CLK_VFO_Q SI5351_CLK1
+
 
 const int hifiBerry_BufferSize = 2048;
 
@@ -167,16 +172,19 @@ class SoapyHifiBerry : public SoapySDR::Device
 	bool i2c_available;
 	std::vector<sdr_stream *> streams;
 
-	unique_ptr<HifiBerryAudioOutputput> uptr_HifiBerryAudioOutputput;
-	unique_ptr<HifiBerryAudioInput> uptr_HifiBerryAudioInput;
-	unique_ptr<cfg::File> uptr_cfg;
+	std::unique_ptr<HifiBerryAudioOutputput> uptr_HifiBerryAudioOutputput;
+	std::unique_ptr<HifiBerryAudioInput> uptr_HifiBerryAudioInput;
+	std::unique_ptr<cfg::File> uptr_cfg;
 
 	SoapyHifiBerryDataBuffer<IQSample> source_buffer_rx;
 	SoapyHifiBerryDataBuffer<IQSample> source_buffer_tx;
-	unique_ptr<Si5351> pSI5351;
+	std::unique_ptr<Si5351> pSI5351;
+	std::unique_ptr<Si5351> pSI5351tx;
+	std::unique_ptr<TCA9548> pTCA9548;
 
 	int get_int(string section, string key);
-	string get_string(string section, string key);
+	std::string get_string(string section, string key);
 	si5351_drive txDrive, rxDrive;
 	SoapySDR::Range rxGain{-12, 40};
+	bool modeIQ;
 };

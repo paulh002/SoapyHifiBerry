@@ -316,12 +316,13 @@ struct Si5351IntStatus
 class Si5351
 {
   public:
-	Si5351(const char *i2c_device_filepath, uint8_t i2c_addr = SI5351_BUS_BASE_ADDR);
+	Si5351(const char *i2c_device_filepath, uint8_t i2c_addr = SI5351_BUS_BASE_ADDR, si5351_clock iclock = SI5351_CLK0, si5351_clock qclock = SI5351_CLK1);
 	~Si5351();
 	bool init(uint8_t, uint32_t, int32_t);
 	void reset(void);
 	uint8_t set_freq(uint64_t, enum si5351_clock);
 	uint8_t set_freq_manual(uint64_t, uint64_t, enum si5351_clock);
+	void setIQFrequency(long freq);
 	void set_pll(uint64_t, enum si5351_pll);
 	void set_ms(enum si5351_clock, struct Si5351RegSet, uint8_t, uint8_t, uint8_t);
 	void output_enable(enum si5351_clock, uint8_t);
@@ -371,6 +372,8 @@ class Si5351
 
 	int i2c_file;
 	std::string i2c_filepath;
+	int lastMult;
+	si5351_clock iclock, qclock;
 };
 
 #endif /* SI5351_H_ */

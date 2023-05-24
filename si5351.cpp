@@ -40,8 +40,8 @@ extern "C" {
 /* Public functions */
 /********************/
 
-Si5351::Si5351(const char *i2c_device_filepath, uint8_t i2c_addr)
-	: i2c_bus_addr(i2c_addr), i2c_file(0), i2c_filepath(i2c_device_filepath)
+Si5351::Si5351(const char *i2c_device_filepath, uint8_t i2c_addr, si5351_clock i_clock, si5351_clock q_clock)
+	: i2c_bus_addr(i2c_addr), i2c_file(0), i2c_filepath(i2c_device_filepath), iclock(i_clock), qclock(q_clock)
 																																										  
 																																										  
 {
@@ -52,6 +52,7 @@ Si5351::Si5351(const char *i2c_device_filepath, uint8_t i2c_addr)
 	pllb_ref_osc = SI5351_PLL_INPUT_XO;
 	clkin_div = SI5351_CLKIN_DIV_1;
 	i2c_file = 0;
+	lastMult = -1;
 }
 
 Si5351::~Si5351()
@@ -1826,4 +1827,49 @@ uint8_t Si5351::select_r_div_ms67(uint64_t *freq)
 	}
 
 	return r_div;
+}
+
+void Si5351::setIQFrequency(long freq)
+{
+	int mult = 0;
+
+	if (freq < 5000000)
+		mult = 150;
+	else if (freq < 6000000)
+		mult = 120;
+	else if (freq < 8000000)
+		mult = 100;
+	else if (freq < 11000000)
+		mult = 80;
+	else if (freq < 15000000)
+		mult = 50;
+	else if (freq < 22000000)
+		mult = 40;
+	else if (freq < 30000000)
+		mult = 30;
+	else if (freq < 40000000)
+		mult = 20;
+	else if (freq < 50000000)
+		mult = 15;
+	else if (freq < 90000000)
+		mult = 10;
+	
+	uint64_t f = freq * 100ULL;
+	uint64_t pllFreq = freq * mult * 100ULL;
+
+	int32_t correction = get_correction(SI5351_PLL_INPUT_XO);
+	pllFreq = pllFreq + (int32_t)((((((int64_t)correction) << 31) / 1000000000LL) * pllFreq) >> 31);
+	printf("pll = %ld Mhz \n", pllFreq);
+
+	set_freq_manual(f, pllFreq, iclock);
+	set_freq_manual(f, pllFreq, qclock);
+
+	if (mult != lastMult)
+	{
+		set_phase(iclock, 0);
+		set_phase(qclock, mult);
+		pll_reset(SI5351_PLLA);
+		update_status();
+		lastMult = mult;
+	}
 }
