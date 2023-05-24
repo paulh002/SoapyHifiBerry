@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.3.0)
 project(SoapyHifiBerrySDR)
 set(LIBRARIES_FROM_REFERENCES -lpthread -lSoapySDR -lliquid -lasound)
-add_library(SoapyHifiBerrySDR SHARED SoapyHifiBerry.cpp AudioInput.cpp AudioOutput.cpp configfile.cpp configoption.cpp RtAudio.cpp si5351.cpp SoapyHifiBerrySettings.cpp SoapyHifiBerryStreaming.cpp strlib.cpp Audiodefs.h AudioInput.h AudioOutput.h configfile.h configoption.h DataBuffer.h RtAudio.h si5351.h SoapyHifiBerry.h strlib.h)
+add_library(SoapyHifiBerrySDR SHARED SoapyHifiBerry.cpp AudioInput.cpp AudioOutput.cpp configfile.cpp configoption.cpp RtAudio.cpp TCA9548.cpp TCA9548.h si5351.cpp SoapyHifiBerrySettings.cpp SoapyHifiBerryStreaming.cpp strlib.cpp Audiodefs.h AudioInput.h AudioOutput.h configfile.h configoption.h DataBuffer.h RtAudio.h si5351.h SoapyHifiBerry.h strlib.h)
 target_compile_definitions(SoapyHifiBerrySDR PRIVATE __LINUX_ALSA__)
 target_compile_options(SoapyHifiBerrySDR PRIVATE -O3 -ggdb )
 set_property(TARGET SoapyHifiBerrySDR PROPERTY CXX_STANDARD 17)
