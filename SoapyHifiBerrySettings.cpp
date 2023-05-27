@@ -387,7 +387,7 @@ void SoapyHifiBerry::setFrequency(const int direction, const size_t channel, con
 		{
 			uint64_t freq = (uint64_t)frequency * SI5351_FREQ_MULT * 4;
 			if (pSI5351)
-				pSI5351->set_freq(freq, CLK_VFO_RX);
+				pSI5351->set_freq(freq, CLK_VFO_TX);
 		}
 	}
 
