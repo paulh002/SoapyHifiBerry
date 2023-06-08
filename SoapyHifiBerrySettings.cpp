@@ -5,7 +5,7 @@
  * Device interface
  **********************************************************************/
 const cfg::File::ConfigMap defaultOptions = {
-	{"si5351", {{"correction", cfg::makeOption("0")}, {"mode", cfg::makeOption("single")} , {"rxdrive", cfg::makeOption("2")}, {"t.xdrive", cfg::makeOption("2")}}},
+	{"si5351", {{"correction", cfg::makeOption("0")}, {"mode", cfg::makeOption("single")} , {"rxdrive", cfg::makeOption("8")}, {"t.xdrive", cfg::makeOption("8")}}},
 	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")}, {"input", cfg::makeOption("DIFF")}}}};
 
 int SoapyHifiBerry::get_int(string section, string key)
@@ -39,7 +39,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	SoapySDR_setLogLevel(SOAPY_SDR_INFO);
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::SoapyHifiBerry  constructor called");
 	no_channels = 1;
-	txDrive  = rxDrive = SI5351_DRIVE_2MA;
+	txDrive  = rxDrive = SI5351_DRIVE_8MA;
 	modeIQ = false;
 
 	uptr_cfg = make_unique<cfg::File>();
@@ -63,7 +63,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		rxDrive = SI5351_DRIVE_8MA;
 		break;
 	default:
-		rxDrive = SI5351_DRIVE_2MA;
+		rxDrive = SI5351_DRIVE_8MA;
 		break;
 	}
 	
@@ -80,7 +80,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		txDrive = SI5351_DRIVE_8MA;
 		break;
 	default:
-		txDrive = SI5351_DRIVE_2MA;
+		txDrive = SI5351_DRIVE_8MA;
 		break;
 	}
 
@@ -145,7 +145,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	{
 		pTCA9548 = std::make_unique<TCA9548>("/dev/i2c-1", 0x70);
 		pTCA9548->begin(1);
-		pSI5351 = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR);
+		pSI5351 = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR, CLK_VFO_I, CLK_VFO_Q);
 		if (pSI5351->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0))
 		{
 			pSI5351->drive_strength(CLK_VFO_I, rxDrive);
@@ -156,8 +156,8 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 			pSI5351->update_status();
 		}
 		pTCA9548->setChannelMask(2);
-		pSI5351tx = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR);
-		if (pSI5351tx->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0))
+		pSI5351tx = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR, CLK_VFO_I, CLK_VFO_Q);
+		if (pSI5351tx->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0, pSI5351->getFileHandle()))
 		{
 			pSI5351tx->drive_strength(CLK_VFO_I, rxDrive);
 			pSI5351tx->drive_strength(CLK_VFO_Q, rxDrive);

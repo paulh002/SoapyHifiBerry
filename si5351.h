@@ -318,11 +318,11 @@ class Si5351
   public:
 	Si5351(const char *i2c_device_filepath, uint8_t i2c_addr = SI5351_BUS_BASE_ADDR, si5351_clock iclock = SI5351_CLK0, si5351_clock qclock = SI5351_CLK1);
 	~Si5351();
-	bool init(uint8_t, uint32_t, int32_t);
+	bool init(uint8_t, uint32_t, int32_t, int fileHandle = 0);
 	void reset(void);
 	uint8_t set_freq(uint64_t, enum si5351_clock);
 	uint8_t set_freq_manual(uint64_t, uint64_t, enum si5351_clock);
-	void setIQFrequency(long freq);
+	void setIQFrequency(int freq);
 	void set_pll(uint64_t, enum si5351_pll);
 	void set_ms(enum si5351_clock, struct Si5351RegSet, uint8_t, uint8_t, uint8_t);
 	void output_enable(enum si5351_clock, uint8_t);
@@ -354,6 +354,7 @@ class Si5351
 	enum si5351_pll_input plla_ref_osc;
 	enum si5351_pll_input pllb_ref_osc;
 	uint32_t xtal_freq[2];
+	int getFileHandle() { return i2c_file; }
 
   private:
 	uint64_t pll_calc(enum si5351_pll, uint64_t, struct Si5351RegSet *, int32_t, uint8_t);

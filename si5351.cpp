@@ -77,20 +77,27 @@ Si5351::~Si5351()
  * I2C address.
  *
  */
-bool Si5351::init(uint8_t xtal_load_c, uint32_t xo_freq, int32_t corr)
+bool Si5351::init(uint8_t xtal_load_c, uint32_t xo_freq, int32_t corr, int fileHandle)
 {
     //Open i2c device
-    int file;
-    if((file = open(i2c_filepath.data(), O_RDWR)) < 0) {
-        return false;
-    }
-    i2c_file = file;
+	if (fileHandle)
+		i2c_file = fileHandle;
+	else
+	{
+		int file;
+		if ((file = open(i2c_filepath.data(), O_RDWR)) < 0)
+		{
+			return false;
+		}
+		i2c_file = file;
 
-    //Set address
-    if(ioctl(file, I2C_SLAVE_FORCE, i2c_bus_addr) < 0) {
-        return false;
-    }
-    // Wait for SYS_INIT flag to be clear, indicating that device is ready
+		//Set address
+		if (ioctl(file, I2C_SLAVE_FORCE, i2c_bus_addr) < 0)
+		{
+			return false;
+		}
+	}
+	// Wait for SYS_INIT flag to be clear, indicating that device is ready
     uint8_t status_reg = 0;
     do{
         status_reg = si5351_read(SI5351_DEVICE_STATUS);
@@ -1829,7 +1836,7 @@ uint8_t Si5351::select_r_div_ms67(uint64_t *freq)
 	return r_div;
 }
 
-void Si5351::setIQFrequency(long freq)
+void Si5351::setIQFrequency(int freq)
 {
 	int mult = 0;
 
