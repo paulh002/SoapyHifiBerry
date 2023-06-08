@@ -5,7 +5,7 @@
  * Device interface
  **********************************************************************/
 const cfg::File::ConfigMap defaultOptions = {
-	{"si5351", {{"correction", cfg::makeOption("0")}, {"mode", cfg::makeOption("single")} , {"rxdrive", cfg::makeOption("8")}, {"t.xdrive", cfg::makeOption("8")}}},
+	{"si5351", {{"correction", cfg::makeOption("0")}, {"mode", cfg::makeOption("single")} , {"rxdrive", cfg::makeOption("8")}, {"txdrive", cfg::makeOption("8")}}},
 	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")}, {"input", cfg::makeOption("DIFF")}}}};
 
 int SoapyHifiBerry::get_int(string section, string key)
