@@ -39,7 +39,8 @@
 #define SI5351_FREQ_MULT 100ULL
 #define SI5351_DEFAULT_CLK 1000000000ULL
 
-#define SI5351_PLL_VCO_MIN 600000000
+//#define SI5351_PLL_VCO_MIN 600000000
+#define SI5351_PLL_VCO_MIN 380000000
 #define SI5351_PLL_VCO_MAX 900000000
 #define SI5351_MULTISYNTH_MIN_FREQ 500000
 #define SI5351_MULTISYNTH_DIVBY4_FREQ 150000000
@@ -322,7 +323,9 @@ class Si5351
 	void reset(void);
 	uint8_t set_freq(uint64_t, enum si5351_clock);
 	uint8_t set_freq_manual(uint64_t, uint64_t, enum si5351_clock);
-	void setIQFrequency(int freq);
+	uint8_t set_iq_freq_manual(uint64_t freq, uint64_t pll_freq, enum si5351_clock iclk, enum si5351_clock qclk);
+	void setIQFrequency(uint64_t freq);
+	int getEvenDivisor(uint64_t freq);
 	void set_pll(uint64_t, enum si5351_pll);
 	void set_ms(enum si5351_clock, struct Si5351RegSet, uint8_t, uint8_t, uint8_t);
 	void output_enable(enum si5351_clock, uint8_t);

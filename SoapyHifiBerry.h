@@ -47,6 +47,13 @@ typedef enum hifiberrysdrStreamFormat
 	HIFIBERRY_SDR_CS16
 } hifiberrysdrStreamFormat;
 
+typedef enum vfoMode_
+{
+	Single,
+	IQSingle,
+	IQMulti,
+} vfoMode;
+
 class sdr_stream
 {
   public:
@@ -186,5 +193,7 @@ class SoapyHifiBerry : public SoapySDR::Device
 	std::string get_string(string section, string key);
 	si5351_drive txDrive, rxDrive;
 	SoapySDR::Range rxGain{-12, 40};
-	bool modeIQ;
+	vfoMode vfoIQMode;
+	int multiplier;
+	bool disableOutput;
 };

@@ -1836,40 +1836,50 @@ uint8_t Si5351::select_r_div_ms67(uint64_t *freq)
 	return r_div;
 }
 
-void Si5351::setIQFrequency(int freq)
+// selects the best divider/phase constant for the range
+// from Mario AE0GL
+int Si5351::getEvenDivisor(uint64_t freq)
+{
+	if (freq < 6850000)
+		return 126;
+	else if (freq < 9500000)
+		return 88;
+	else if (freq < 13600000)
+		return 64;
+	else if (freq < 17500000)
+		return 44;
+	else if (freq < 25000000)
+		return 34;
+	else if (freq < 36000000)
+		return 24;
+	else if (freq < 45000000)
+		return 18;
+	else if (freq < 60000000)
+		return 14;
+	else if (freq < 80000000)
+		return 10;
+	else if (freq < 100000000)
+		return 8;
+	else if (freq < 146600000)
+		return 6;
+	else if (freq < 220000000)
+		return 4;
+	else
+		return 2;
+}
+
+void Si5351::setIQFrequency(uint64_t freq)
 {
 	int mult = 0;
 
-	if (freq < 5000000)
-		mult = 150;
-	else if (freq < 6000000)
-		mult = 120;
-	else if (freq < 8000000)
-		mult = 100;
-	else if (freq < 11000000)
-		mult = 80;
-	else if (freq < 15000000)
-		mult = 50;
-	else if (freq < 22000000)
-		mult = 40;
-	else if (freq < 30000000)
-		mult = 30;
-	else if (freq < 40000000)
-		mult = 20;
-	else if (freq < 50000000)
-		mult = 15;
-	else if (freq < 90000000)
-		mult = 10;
-	
+	mult = getEvenDivisor(freq);
 	uint64_t f = freq * 100ULL;
 	uint64_t pllFreq = freq * mult * 100ULL;
 
 	int32_t correction = get_correction(SI5351_PLL_INPUT_XO);
 	pllFreq = pllFreq + (int32_t)((((((int64_t)correction) << 31) / 1000000000LL) * pllFreq) >> 31);
-	printf("pll = %ld Mhz \n", pllFreq);
-
-	set_freq_manual(f, pllFreq, iclock);
-	set_freq_manual(f, pllFreq, qclock);
+	printf("mult = %d pll = %ld Mhz  freq %ld\n", mult, pllFreq / 100L, freq);
+	set_iq_freq_manual(f, pllFreq, iclock, qclock);
 
 	if (mult != lastMult)
 	{
@@ -1879,4 +1889,49 @@ void Si5351::setIQFrequency(int freq)
 		update_status();
 		lastMult = mult;
 	}
+}
+
+uint8_t Si5351::set_iq_freq_manual(uint64_t freq, uint64_t pll_freq, enum si5351_clock iclk, enum si5351_clock qclk)
+{
+	struct Si5351RegSet ms_reg;
+	uint8_t int_mode = 0;
+	uint8_t div_by_4 = 0;
+
+	// Lower bounds check
+	if (freq > 0 && freq < SI5351_CLKOUT_MIN_FREQ * SI5351_FREQ_MULT)
+	{
+		freq = SI5351_CLKOUT_MIN_FREQ * SI5351_FREQ_MULT;
+	}
+
+	// Upper bounds check
+	if (freq > SI5351_CLKOUT_MAX_FREQ * SI5351_FREQ_MULT)
+	{
+		freq = SI5351_CLKOUT_MAX_FREQ * SI5351_FREQ_MULT;
+	}
+
+	uint8_t r_div;
+
+	clk_freq[(uint8_t)iclk] = freq;
+	clk_freq[(uint8_t)qclk] = freq;
+
+	set_pll(pll_freq, pll_assignment[iclk]);
+
+	// Select the proper R div value
+	r_div = select_r_div(&freq);
+
+	// Calculate the synth parameters
+	multisynth_calc(freq, pll_freq, &ms_reg);
+
+	// If freq > 150 MHz, we need to use DIVBY4 and integer mode
+	if ((long long)freq >= SI5351_MULTISYNTH_DIVBY4_FREQ * SI5351_FREQ_MULT)
+	{
+		div_by_4 = 1;
+		int_mode = 1;
+	}
+
+	// Set multisynth registers (MS must be set before PLL)
+	set_ms(iclk, ms_reg, int_mode, r_div, div_by_4);
+	set_ms(qclk, ms_reg, int_mode, r_div, div_by_4);
+
+	return 0;
 }

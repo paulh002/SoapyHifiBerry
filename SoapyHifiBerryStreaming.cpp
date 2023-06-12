@@ -116,9 +116,29 @@ SoapySDR::Stream *SoapyHifiBerry::setupStream(
 	if (direction == SOAPY_SDR_TX)
 	{
 		iqsamples.clear();
-		pSI5351->output_enable(CLK_VFO_TX, 1);
+		{
+			if (disableOutput)
+			{
+				switch (vfoIQMode)
+				{
+				case Single:
+					if (pSI5351)
+						pSI5351->output_enable(CLK_VFO_TX, 1);
+					break;
+				case IQSingle:
+					break;
+				case IQMulti:
+					if (pSI5351tx)
+					{
+						pTCA9548->setChannelMask(2);
+						pSI5351tx->output_enable(CLK_VFO_I, 1);
+						pSI5351tx->output_enable(CLK_VFO_Q, 1);
+					}
+					break;
+				}
+			}
+		}
 	}
-
 	streams.push_back(ptr);
 	return (SoapySDR::Stream *)ptr;
 }
@@ -133,7 +153,26 @@ int SoapyHifiBerry::deactivateStream(SoapySDR::Stream *stream, const int flags, 
 		if (ptr->get_direction() == SOAPY_SDR_TX)
 		{
 			SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::deactivateStream disable TX ");
-			pSI5351->output_enable(CLK_VFO_TX, 0);
+			if (disableOutput)
+			{
+				switch (vfoIQMode)
+				{
+				case Single:
+					if (pSI5351)
+						pSI5351->output_enable(CLK_VFO_TX, 0);
+					break;
+				case IQSingle:
+					break;
+				case IQMulti:
+					if (pSI5351tx)
+					{
+						pTCA9548->setChannelMask(2);
+						pSI5351tx->output_enable(CLK_VFO_I, 0);
+						pSI5351tx->output_enable(CLK_VFO_Q, 0);
+					}
+					break;
+				}
+			}
 		}
 	}
 	return 0;

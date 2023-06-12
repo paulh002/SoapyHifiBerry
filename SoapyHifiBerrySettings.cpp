@@ -4,8 +4,9 @@
 /***********************************************************************
  * Device interface
  **********************************************************************/
+
 const cfg::File::ConfigMap defaultOptions = {
-	{"si5351", {{"correction", cfg::makeOption("0")}, {"mode", cfg::makeOption("single")} , {"rxdrive", cfg::makeOption("8")}, {"txdrive", cfg::makeOption("8")}}},
+	{"si5351", {{"correction", cfg::makeOption("0")}, {"disabletxoutput", cfg::makeOption("on")}, {"mode", cfg::makeOption("single")}, {"multiplier", cfg::makeOption("4")}, {"rxdrive", cfg::makeOption("8")}, {"tixdrive", cfg::makeOption("8")}}},
 	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")}, {"input", cfg::makeOption("DIFF")}}}};
 
 int SoapyHifiBerry::get_int(string section, string key)
@@ -40,16 +41,18 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::SoapyHifiBerry  constructor called");
 	no_channels = 1;
 	txDrive  = rxDrive = SI5351_DRIVE_8MA;
-	modeIQ = false;
-
+	vfoIQMode = Single;
+	disableOutput = true;
 	uptr_cfg = make_unique<cfg::File>();
 	if (!uptr_cfg->loadFromFile("hifiberry.cfg"))
 	{
 		uptr_cfg->setDefaultOptions(defaultOptions);
 		uptr_cfg->writeToFile("hifiberry.cfg");
 	}
+	multiplier = SoapyHifiBerry::get_int("si5351", "multiplier");
+	if (!multiplier)
+		multiplier = 4;
 	int samplerate = SoapyHifiBerry::get_int("sound", "samplerate");
-
 	int driveConfig = SoapyHifiBerry::get_int("si5351", "rxdrive");
 	switch (driveConfig)
 	{
@@ -119,29 +122,59 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	}
 	//numid = 25, iface = MIXER, name = 'ADC Mic Bias'
 	uptr_HifiBerryAudioOutputput->controle_alsa(25, 0);
+	if (strlib::toUpper(SoapyHifiBerry::get_string("si5351", "disabletxoutput")) == "ON")
+		disableOutput = true;
+	if (strlib::toUpper(SoapyHifiBerry::get_string("si5351", "disabletxoutput")) == "OFF")
+		disableOutput = false;
 
 	std::string IQMode = SoapyHifiBerry::get_string("si5351", "mode");
-	if (IQMode != "IQ")
+	IQMode = strlib::toUpper(IQMode);
+	if (IQMode == "SINGLE")
+		vfoIQMode = Single;
+	else if (IQMode == "IQSINGLE")
+		vfoIQMode = IQSingle;
+	else
+		vfoIQMode = IQMulti;
+
+	if (vfoIQMode == Single || vfoIQMode == IQSingle)
 	{
 		pSI5351 = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR);
-		if (pSI5351->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0))
-		{
-			cout << "si5351 found" << endl;
-			pSI5351->set_correction((long)corr, SI5351_PLL_INPUT_XO);
-			pSI5351->drive_strength(CLK_VFO_RX, rxDrive);
-			pSI5351->drive_strength(CLK_VFO_TX, txDrive);
-			pSI5351->output_enable(CLK_VFO_RX, 1);
-			pSI5351->output_enable(CLK_VFO_TX, 0);
-			pSI5351->output_enable(CLK_NA, 0);
-			pSI5351->update_status();
-		}
-		else
+		if (!pSI5351)
 		{
 			cout << "No si5351 found" << endl;
 			pSI5351.reset(nullptr);
+			return;
+		}
+		if (pSI5351->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0))
+		{
+			cout << "No si5351 found" << endl;
+			pSI5351.reset(nullptr);
+			return;
 		}
 	}
-	else
+	if (vfoIQMode == Single)
+	{
+		cout << "si5351 found" << endl;
+		pSI5351->set_correction((long)corr, SI5351_PLL_INPUT_XO);
+		pSI5351->drive_strength(CLK_VFO_RX, rxDrive);
+		pSI5351->drive_strength(CLK_VFO_TX, txDrive);
+		pSI5351->output_enable(CLK_VFO_RX, 1);
+		pSI5351->output_enable(CLK_VFO_TX, disableOutput ? (0) : (1));
+		pSI5351->output_enable(CLK_NA, 0);
+		pSI5351->update_status();
+	}
+	if (vfoIQMode == IQSingle)
+	{
+		cout << "si5351 found" << endl;
+		pSI5351->set_correction((long)corr, SI5351_PLL_INPUT_XO);
+		pSI5351->drive_strength(CLK_VFO_I, rxDrive);
+		pSI5351->drive_strength(CLK_VFO_Q, rxDrive);
+		pSI5351->output_enable(CLK_VFO_I, 1);
+		pSI5351->output_enable(CLK_VFO_Q, 1);
+		pSI5351->output_enable(CLK_NA, 0);
+		pSI5351->update_status();
+	}
+	if (vfoIQMode == IQMulti)
 	{
 		pTCA9548 = std::make_unique<TCA9548>("/dev/i2c-1", 0x70);
 		pTCA9548->begin(1);
@@ -151,7 +184,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 			pSI5351->drive_strength(CLK_VFO_I, rxDrive);
 			pSI5351->drive_strength(CLK_VFO_Q, rxDrive);
 			pSI5351->output_enable(CLK_VFO_I, 1);
-			pSI5351->output_enable(CLK_VFO_Q, 0);
+			pSI5351->output_enable(CLK_VFO_Q, 1);
 			pSI5351->output_enable(CLK_NA, 0);
 			pSI5351->update_status();
 		}
@@ -159,10 +192,10 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		pSI5351tx = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR, CLK_VFO_I, CLK_VFO_Q);
 		if (pSI5351tx->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0, pSI5351->getFileHandle()))
 		{
-			pSI5351tx->drive_strength(CLK_VFO_I, rxDrive);
-			pSI5351tx->drive_strength(CLK_VFO_Q, rxDrive);
-			pSI5351tx->output_enable(CLK_VFO_I, 1);
-			pSI5351tx->output_enable(CLK_VFO_Q, 0);
+			pSI5351tx->drive_strength(CLK_VFO_I, txDrive);
+			pSI5351tx->drive_strength(CLK_VFO_Q, txDrive);
+			pSI5351tx->output_enable(CLK_VFO_I, disableOutput ? (0) : (1));
+			pSI5351tx->output_enable(CLK_VFO_Q, disableOutput ? (0) : (1));
 			pSI5351tx->output_enable(CLK_NA, 0);
 			pSI5351tx->update_status();
 		}
@@ -172,7 +205,6 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 			pSI5351.reset(nullptr);
 			pSI5351tx.reset(nullptr);
 		}
-		modeIQ = true;
 	}
 }
 
@@ -348,26 +380,26 @@ void SoapyHifiBerry::setGain(const int direction, const size_t channel, const do
  ******************************************************************/
 void SoapyHifiBerry::setFrequency(const int direction, const size_t channel, const double frequency, const SoapySDR::Kwargs &args)
 {
-
-	
-
 	if (direction == SOAPY_SDR_RX)
 	{
 		SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::setFrequency called RX");
-
-		if (modeIQ)
+		switch (vfoIQMode)
 		{
+		case Single:
+			if (pSI5351)
+				pSI5351->set_freq((uint64_t)frequency * SI5351_FREQ_MULT * multiplier, CLK_VFO_RX);
+			break;
+		case IQSingle:
+			if (pSI5351)
+				pSI5351->setIQFrequency((long)frequency * (long)multiplier);
+			break;
+		case IQMulti:
 			if (pSI5351)
 			{
 				pTCA9548->setChannelMask(1);
-				pSI5351->setIQFrequency((long)frequency);
+				pSI5351->setIQFrequency((long)frequency * (long)multiplier);
 			}
-		}
-		else
-		{
-			uint64_t freq = (uint64_t)frequency * SI5351_FREQ_MULT * 4;
-			if (pSI5351)
-				pSI5351->set_freq(freq, CLK_VFO_RX);
+			break;
 		}
 	}
 
@@ -375,19 +407,23 @@ void SoapyHifiBerry::setFrequency(const int direction, const size_t channel, con
 	{
 		SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::setFrequency called TX");
 
-		if (modeIQ)
+		switch (vfoIQMode)
 		{
+		case Single:
+			if (pSI5351)
+				pSI5351->set_freq((uint64_t)frequency * SI5351_FREQ_MULT * multiplier, CLK_VFO_TX);
+			break;
+		case IQSingle:
+			if (pSI5351)
+				pSI5351->setIQFrequency((long)frequency * (long)multiplier);
+			break;
+		case IQMulti:
 			if (pSI5351tx)
 			{
 				pTCA9548->setChannelMask(2);
-				pSI5351tx->setIQFrequency((long)frequency);
+				pSI5351tx->setIQFrequency((long)frequency * (long)multiplier);
 			}
-		}
-		else
-		{
-			uint64_t freq = (uint64_t)frequency * SI5351_FREQ_MULT * 4;
-			if (pSI5351)
-				pSI5351->set_freq(freq, CLK_VFO_TX);
+			break;
 		}
 	}
 
