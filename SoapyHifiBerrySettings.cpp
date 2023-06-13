@@ -6,7 +6,7 @@
  **********************************************************************/
 
 const cfg::File::ConfigMap defaultOptions = {
-	{"si5351", {{"correction", cfg::makeOption("0")}, {"disabletxoutput", cfg::makeOption("on")}, {"mode", cfg::makeOption("single")}, {"multiplier", cfg::makeOption("4")}, {"rxdrive", cfg::makeOption("8")}, {"tixdrive", cfg::makeOption("8")}}},
+	{"si5351", {{"correction", cfg::makeOption("0")}, {"disabletxoutput", cfg::makeOption("on")}, {"mode", cfg::makeOption("single")}, {"multiplier", cfg::makeOption("4")}, {"rxdrive", cfg::makeOption("8")}, {"txdrive", cfg::makeOption("8")}}},
 	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")}, {"input", cfg::makeOption("DIFF")}}}};
 
 int SoapyHifiBerry::get_int(string section, string key)
