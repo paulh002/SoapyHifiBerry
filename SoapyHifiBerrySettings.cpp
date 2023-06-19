@@ -138,6 +138,8 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 
 	if (vfoIQMode == Single || vfoIQMode == IQSingle)
 	{
+		cout << "IQ mode single multpilier " << multiplier << endl;
+		
 		pSI5351 = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR);
 		if (!pSI5351)
 		{
@@ -145,7 +147,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 			pSI5351.reset(nullptr);
 			return;
 		}
-		if (pSI5351->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0))
+		if (!pSI5351->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0))
 		{
 			cout << "No si5351 found" << endl;
 			pSI5351.reset(nullptr);
