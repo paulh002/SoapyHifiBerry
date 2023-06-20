@@ -44,6 +44,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	vfoIQMode = Single;
 	disableOutput = true;
 	uptr_cfg = make_unique<cfg::File>();
+	multiplier = 0;
 	if (!uptr_cfg->loadFromFile("hifiberry.cfg"))
 	{
 		uptr_cfg->setDefaultOptions(defaultOptions);
@@ -51,7 +52,8 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	}
 	multiplier = SoapyHifiBerry::get_int("si5351", "multiplier");
 	if (!multiplier)
-		multiplier = 4;
+		multiplier = 1;
+
 	int samplerate = SoapyHifiBerry::get_int("sound", "samplerate");
 	int driveConfig = SoapyHifiBerry::get_int("si5351", "rxdrive");
 	switch (driveConfig)
@@ -100,6 +102,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		}
 	}
 	int corr = get_int("si5351", "correction");
+	int corrtx = get_int("si5351", "correctiontx");
 	string dev = get_string("sound", "device");
 	
 	uptr_HifiBerryAudioOutputput->open(dev);
@@ -156,6 +159,8 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	}
 	if (vfoIQMode == Single)
 	{
+		if (!multiplier)
+			multiplier = 4;
 		cout << "si5351 found" << endl;
 		pSI5351->set_correction((long)corr, SI5351_PLL_INPUT_XO);
 		pSI5351->drive_strength(CLK_VFO_RX, rxDrive);
@@ -183,6 +188,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		pSI5351 = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR, CLK_VFO_I, CLK_VFO_Q);
 		if (pSI5351->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0))
 		{
+			pSI5351->set_correction((long)corr, SI5351_PLL_INPUT_XO);
 			pSI5351->drive_strength(CLK_VFO_I, rxDrive);
 			pSI5351->drive_strength(CLK_VFO_Q, rxDrive);
 			pSI5351->output_enable(CLK_VFO_I, 1);
@@ -194,6 +200,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		pSI5351tx = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR, CLK_VFO_I, CLK_VFO_Q);
 		if (pSI5351tx->init(SI5351_CRYSTAL_LOAD_8PF, 0, 0, pSI5351->getFileHandle()))
 		{
+			pSI5351tx->set_correction((long)corrtx, SI5351_PLL_INPUT_XO);
 			pSI5351tx->drive_strength(CLK_VFO_I, txDrive);
 			pSI5351tx->drive_strength(CLK_VFO_Q, txDrive);
 			pSI5351tx->output_enable(CLK_VFO_I, disableOutput ? (0) : (1));

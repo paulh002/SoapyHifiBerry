@@ -1876,8 +1876,6 @@ void Si5351::setIQFrequency(uint64_t freq)
 	uint64_t f = freq * 100ULL;
 	uint64_t pllFreq = freq * mult * 100ULL;
 
-	int32_t correction = get_correction(SI5351_PLL_INPUT_XO);
-	pllFreq = pllFreq + (int32_t)((((((int64_t)correction) << 31) / 1000000000LL) * pllFreq) >> 31);
 	printf("mult = %d pll = %ld Mhz  freq %ld\n", mult, pllFreq / 100L, freq);
 	set_iq_freq_manual(f, pllFreq, iclock, qclock);
 
