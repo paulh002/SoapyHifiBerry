@@ -9,4 +9,15 @@ target_compile_definitions(SoapyHifiBerrySDR PRIVATE __LINUX_ALSA__)
 target_compile_options(SoapyHifiBerrySDR PRIVATE -O3 -ggdb )
 set_property(TARGET SoapyHifiBerrySDR PROPERTY CXX_STANDARD 17)
 target_link_libraries(SoapyHifiBerrySDR "${LIBRARIES_FROM_REFERENCES}")
-install(TARGETS SoapyHifiBerrySDR DESTINATION /usr/local/lib/arm-linux-gnueabihf/SoapySDR/modules0.8-3/)
+
+########################################################################
+# build the module
+########################################################################
+find_package(SoapySDR CONFIG)
+
+if (NOT SoapySDR_FOUND)
+    message(WARNING "SoapySDR development files not found - skipping support")
+    return()
+endif ()
+
+install(TARGETS SoapyHifiBerrySDR DESTINATION  ${CMAKE_LIB_DEST})
