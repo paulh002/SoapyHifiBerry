@@ -141,7 +141,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 
 	if (vfoIQMode == Single || vfoIQMode == IQSingle)
 	{
-		cout << "IQ mode single multpilier " << multiplier << endl;
+		cout << "IQ mode single multiplier = " << multiplier << endl;
 		
 		pSI5351 = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR);
 		if (!pSI5351)
@@ -183,6 +183,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	}
 	if (vfoIQMode == IQMulti)
 	{
+		cout << "IQMulti mode multiplier = " << multiplier << endl;
 		pTCA9548 = std::make_unique<TCA9548>("/dev/i2c-1", 0x70);
 		pTCA9548->begin(1);
 		pSI5351 = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR, CLK_VFO_I, CLK_VFO_Q);
