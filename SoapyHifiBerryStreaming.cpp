@@ -37,9 +37,9 @@ SoapySDR::RangeList SoapyHifiBerry::getSampleRateRange(const int direction, cons
 	SoapySDR::RangeList rangeList;
 
 	if (direction == SOAPY_SDR_RX)
-		rangeList.push_back(SoapySDR::Range(48000.0, 96000.0, 192000.0));
+		rangeList.push_back(SoapySDR::Range(48000.0, 192000.0));
 	if (direction == SOAPY_SDR_TX)
-		rangeList.push_back(SoapySDR::Range(48000.0, 96000.0, 192000.0));
+		rangeList.push_back(SoapySDR::Range(48000.0, 384000.0));
 
 	return rangeList;
 }

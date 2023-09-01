@@ -6,8 +6,8 @@
  **********************************************************************/
 
 const cfg::File::ConfigMap defaultOptions = {
-	{"si5351", {{"correction", cfg::makeOption("0")}, {"disabletxoutput", cfg::makeOption("on")}, {"mode", cfg::makeOption("single")}, {"multiplier", cfg::makeOption("4")}, {"rxdrive", cfg::makeOption("8")}, {"txdrive", cfg::makeOption("8")}}},
-	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")}, {"input", cfg::makeOption("DIFF")}}}};
+	{"si5351", {{"correction", cfg::makeOption("0")}, {"correction_tx", cfg::makeOption("0")}, {"disabletxoutput", cfg::makeOption("on")}, {"mode", cfg::makeOption("IQMULTI")}, {"multiplier", cfg::makeOption("1")}, {"rxdrive", cfg::makeOption("8")}, {"txdrive", cfg::makeOption("8")}}},
+	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")}, {"samplerate_tx", cfg::makeOption("384000")}, {"input", cfg::makeOption("DIFF")}}}};
 
 int SoapyHifiBerry::get_int(string section, string key)
 {
@@ -55,6 +55,9 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		multiplier = 1;
 
 	int samplerate = SoapyHifiBerry::get_int("sound", "samplerate");
+	int samplerate_tx = SoapyHifiBerry::get_int("sound", "samplerate_tx");
+	if (!samplerate_tx)
+		samplerate_tx = samplerate;
 	int driveConfig = SoapyHifiBerry::get_int("si5351", "rxdrive");
 	switch (driveConfig)
 	{
@@ -90,7 +93,7 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	}
 
 	uptr_HifiBerryAudioOutputput = make_unique<HifiBerryAudioOutputput>(samplerate, &source_buffer_tx, RtAudio::LINUX_ALSA);
-	uptr_HifiBerryAudioInput = make_unique<HifiBerryAudioInput>(samplerate, true, &source_buffer_rx, RtAudio::LINUX_ALSA);
+	uptr_HifiBerryAudioInput = make_unique<HifiBerryAudioInput>(samplerate_tx, true, &source_buffer_rx, RtAudio::LINUX_ALSA);
 
 	std::vector<std::string> devices;
 	uptr_HifiBerryAudioOutputput->listDevices(devices);
@@ -236,7 +239,7 @@ std::string SoapyHifiBerry::getHardwareKey(void) const
 {
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::getHardwareKey called");
 
-	return "v0.1";
+	return "v0.2";
 }
 
 SoapySDR::Kwargs SoapyHifiBerry::getHardwareInfo(void) const
@@ -248,7 +251,7 @@ SoapySDR::Kwargs SoapyHifiBerry::getHardwareInfo(void) const
 	int count = 0;
 	
 	char version[100];
-	snprintf(version, 100, "%u.%u", 0, 1); //0.1
+	snprintf(version, 100, "%u.%u", 0, 2); //0.1
 	info["Version HifiBerry"] = version;
 	return info;
 }
@@ -293,6 +296,7 @@ std::vector<double> SoapyHifiBerry::listSampleRates(const int direction, const s
 		options.push_back(0.048e6);
 		options.push_back(0.096e6);
 		options.push_back(0.192e6);
+		options.push_back(0.384e6);
 	}
 	return (options);
 }
