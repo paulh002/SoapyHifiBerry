@@ -14,6 +14,11 @@ SoapySDR::KwargsList findMyHifiBerry(const SoapySDR::Kwargs &args)
 	static std::vector<SoapySDR::Kwargs> results;
 
 	options["driver"] = "hifiberry";
+	options["label"] = "SoapyHifiberrys";
+	options["product"] = "SoapyHifiberry";
+	options["manufacturer"] = "PA0PHH";
+	options["label"] = "Hifiberry";
+	options["tuner"] = "si5351";
 	results.push_back(options);
 
 	return results;

@@ -248,11 +248,11 @@ SoapySDR::Kwargs SoapyHifiBerry::getHardwareInfo(void) const
 	SoapySDR_log(SOAPY_SDR_INFO, "SoapyHifiBerry::getHardwareInfo called");
 
 	SoapySDR::Kwargs info;
-	int count = 0;
-	
-	char version[100];
-	snprintf(version, 100, "%u.%u", 0, 2); //0.1
-	info["Version HifiBerry"] = version;
+	info["library_version"] = "0.2.0";
+	info["backend_version"] = "0.2.0";
+	info["manufacturer"] = "PA0PHH";
+	info["label"] = "HifiBerry";
+	info["origin"] = "https://github.com/paulh002/SoapyHifiBerry";
 	return info;
 }
 
