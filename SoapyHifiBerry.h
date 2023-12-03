@@ -37,7 +37,8 @@
 
 #define CLK_VFO_I SI5351_CLK0
 #define CLK_VFO_Q SI5351_CLK1
-
+#define CLK_VFO_TX_I SI5351_CLK4
+#define CLK_VFO_TX_Q SI5351_CLK5
 
 const int hifiBerry_BufferSize = 2048;
 
@@ -52,6 +53,7 @@ typedef enum vfoMode_
 	Single,
 	IQSingle,
 	IQMulti,
+	IQSingleMultiPort
 } vfoMode;
 
 class sdr_stream
