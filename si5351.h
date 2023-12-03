@@ -317,7 +317,7 @@ struct Si5351IntStatus
 class Si5351
 {
   public:
-	Si5351(const char *i2c_device_filepath, uint8_t i2c_addr = SI5351_BUS_BASE_ADDR, si5351_clock iclock = SI5351_CLK0, si5351_clock qclock = SI5351_CLK1, si5351_clock iclockTx = SI5351_CLK6, si5351_clock qclockTx = SI5351_CLK7);
+	Si5351(const char *i2c_device_filepath, uint8_t i2c_addr = SI5351_BUS_BASE_ADDR, si5351_clock iclock = SI5351_CLK0, si5351_clock qclock = SI5351_CLK1, si5351_clock iclockTx = SI5351_CLK4, si5351_clock qclockTx = SI5351_CLK5);
 	~Si5351();
 	bool init(uint8_t, uint32_t, int32_t, int fileHandle = 0);
 	void reset(void);

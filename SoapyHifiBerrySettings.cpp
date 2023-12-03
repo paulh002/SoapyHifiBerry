@@ -147,8 +147,8 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 	if (vfoIQMode == Single || vfoIQMode == IQSingle || vfoIQMode == IQSingleMultiPort)
 	{
 		cout << "IQ mode single multiplier = " << multiplier << endl;
-		
-		pSI5351 = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR);
+
+		pSI5351 = make_unique<Si5351>("/dev/i2c-1", SI5351_BUS_BASE_ADDR, SI5351_CLK0, SI5351_CLK1, SI5351_CLK4, SI5351_CLK5);
 		if (!pSI5351)
 		{
 			cout << "No si5351 found" << endl;
@@ -194,8 +194,8 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		pSI5351->drive_strength(CLK_VFO_Q, rxDrive);
 		pSI5351->output_enable(CLK_VFO_I, 1);
 		pSI5351->output_enable(CLK_VFO_Q, 1);
-		pSI5351->drive_strength(CLK_VFO_TX_I, rxDrive);
-		pSI5351->drive_strength(CLK_VFO_TX_Q, rxDrive);
+		pSI5351->drive_strength(CLK_VFO_TX_I, txDrive);
+		pSI5351->drive_strength(CLK_VFO_TX_Q, txDrive);
 		pSI5351->output_enable(CLK_VFO_TX_I, 1);
 		pSI5351->output_enable(CLK_VFO_TX_Q, 1);
 		pSI5351->update_status();
