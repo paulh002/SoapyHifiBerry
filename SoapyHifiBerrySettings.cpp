@@ -139,11 +139,13 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		vfoIQMode = Single;
 	else if (IQMode == "IQSINGLE")
 		vfoIQMode = IQSingle;
-	else if (IQMode == "IQMulti")
+	else if (IQMode == "IQMULTI")
 		vfoIQMode = IQMulti;
 	else
 		vfoIQMode = IQSingleMultiPort;
-
+	
+	cout << IQMode << " ";
+	
 	if (vfoIQMode == Single || vfoIQMode == IQSingle || vfoIQMode == IQSingleMultiPort)
 	{
 		cout << "IQ mode single multiplier = " << multiplier << endl;
