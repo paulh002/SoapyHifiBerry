@@ -30,16 +30,6 @@
    Si5351
 --------------------------------------------------------*/
 #define SI5351_BUS_BASE_ADDR 0x60
-
-#define CLK_VFO_RX SI5351_CLK0
-#define CLK_VFO_TX SI5351_CLK1
-#define CLK_NA SI5351_CLK2
-
-#define CLK_VFO_I SI5351_CLK0
-#define CLK_VFO_Q SI5351_CLK1
-#define CLK_VFO_TX_I SI5351_CLK4
-#define CLK_VFO_TX_Q SI5351_CLK5
-
 const int hifiBerry_BufferSize = 2048;
 
 typedef enum hifiberrysdrStreamFormat
@@ -198,4 +188,9 @@ class SoapyHifiBerry : public SoapySDR::Device
 	vfoMode vfoIQMode;
 	int multiplier;
 	bool disableOutput;
+
+	int currDirection;
+	void setOutput(const int direction);
+	enum si5351_clock iclk, iclkTx;
+	enum si5351_clock qclk, qclkTx;
 };

@@ -40,8 +40,8 @@ extern "C" {
 /* Public functions */
 /********************/
 
-Si5351::Si5351(const char *i2c_device_filepath, uint8_t i2c_addr, si5351_clock i_clock, si5351_clock q_clock, si5351_clock i_clockTx, si5351_clock q_clockTx)
-	: i2c_bus_addr(i2c_addr), i2c_file(0), i2c_filepath(i2c_device_filepath), iclock(i_clock), qclock(q_clock), iclockTx(i_clockTx), qclockTx(q_clockTx)
+Si5351::Si5351(const char *i2c_device_filepath, uint8_t i2c_addr)
+	: i2c_bus_addr(i2c_addr), i2c_file(0), i2c_filepath(i2c_device_filepath)
 																																										  
 																																										  
 {
@@ -52,7 +52,7 @@ Si5351::Si5351(const char *i2c_device_filepath, uint8_t i2c_addr, si5351_clock i
 	pllb_ref_osc = SI5351_PLL_INPUT_XO;
 	clkin_div = SI5351_CLKIN_DIV_1;
 	i2c_file = 0;
-	lastMultRx = lastMultTx  = -1;
+	lastMult = -1;
 }
 
 Si5351::~Si5351()
@@ -162,8 +162,8 @@ void Si5351::reset(void)
 	pll_assignment[1] = SI5351_PLLA;
 	pll_assignment[2] = SI5351_PLLA;
 	pll_assignment[3] = SI5351_PLLA;
-	pll_assignment[4] = SI5351_PLLB;
-	pll_assignment[5] = SI5351_PLLB;
+	pll_assignment[4] = SI5351_PLLA;
+	pll_assignment[5] = SI5351_PLLA;
 	pll_assignment[6] = SI5351_PLLB;
 	pll_assignment[7] = SI5351_PLLB;
 
@@ -171,8 +171,8 @@ void Si5351::reset(void)
 	set_ms_source(SI5351_CLK1, SI5351_PLLA);
 	set_ms_source(SI5351_CLK2, SI5351_PLLA);
 	set_ms_source(SI5351_CLK3, SI5351_PLLA);
-	set_ms_source(SI5351_CLK4, SI5351_PLLB);
-	set_ms_source(SI5351_CLK5, SI5351_PLLB);
+	set_ms_source(SI5351_CLK4, SI5351_PLLA);
+	set_ms_source(SI5351_CLK5, SI5351_PLLA);
 	set_ms_source(SI5351_CLK6, SI5351_PLLB);
 	set_ms_source(SI5351_CLK7, SI5351_PLLB);
 
@@ -1840,6 +1840,7 @@ uint8_t Si5351::select_r_div_ms67(uint64_t *freq)
 // from Mario AE0GL
 int Si5351::getEvenDivisor(uint64_t freq)
 {
+
 	if (freq < 6850000)
 		return 126;
 	else if (freq < 9500000)
@@ -1868,7 +1869,7 @@ int Si5351::getEvenDivisor(uint64_t freq)
 		return 2;
 }
 
-void Si5351::setIQFrequency(uint64_t freq, bool highClockPorts)
+void Si5351::setIQFrequency(uint64_t freq, enum si5351_clock iclk, enum si5351_clock qclk)
 {
 	int mult = 0;
 
@@ -1876,26 +1877,14 @@ void Si5351::setIQFrequency(uint64_t freq, bool highClockPorts)
 	uint64_t f = freq * 100ULL;
 	uint64_t pllFreq = freq * mult * 100ULL;
 
-	printf("mult = %d pll = %ld Mhz  freq %ld\n", mult, pllFreq / 100L, freq);
-
-	if (!highClockPorts)
-		set_iq_freq_manual(f, pllFreq, iclock, qclock);
-	else
-		set_iq_freq_manual(f, pllFreq, iclockTx, qclockTx);
-
-	if (mult != lastMultRx && !highClockPorts)
+	set_iq_freq_manual(f, pllFreq, iclk, qclk);
+	if (mult != lastMult)
 	{
-		set_phase(iclock, 0);
-		set_phase(qclock, mult);
-		pll_reset(pll_assignment[iclock]);
-		lastMultRx = mult;
-	}
-	if (mult != lastMultTx && highClockPorts)
-	{
-		set_phase(iclockTx, 0);
-		set_phase(qclockTx, mult);
-		pll_reset(pll_assignment[iclockTx]);
-		lastMultTx = mult;
+		printf("mult = %d pll = %ld Mhz  freq %ld\n", mult, pllFreq / 100L, freq);
+		set_phase(iclk, 0);
+		set_phase(qclk, mult);
+		pll_reset(SI5351_PLLA); ////pll_assignment[iclock] all ports should use plla
+		lastMult = mult;
 	}
 	update_status();
 }

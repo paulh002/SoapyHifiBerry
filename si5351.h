@@ -317,14 +317,14 @@ struct Si5351IntStatus
 class Si5351
 {
   public:
-	Si5351(const char *i2c_device_filepath, uint8_t i2c_addr = SI5351_BUS_BASE_ADDR, si5351_clock iclock = SI5351_CLK0, si5351_clock qclock = SI5351_CLK1, si5351_clock iclockTx = SI5351_CLK4, si5351_clock qclockTx = SI5351_CLK5);
+	Si5351(const char *i2c_device_filepath, uint8_t i2c_addr = SI5351_BUS_BASE_ADDR);
 	~Si5351();
 	bool init(uint8_t, uint32_t, int32_t, int fileHandle = 0);
 	void reset(void);
 	uint8_t set_freq(uint64_t, enum si5351_clock);
 	uint8_t set_freq_manual(uint64_t, uint64_t, enum si5351_clock);
 	uint8_t set_iq_freq_manual(uint64_t freq, uint64_t pll_freq, enum si5351_clock iclk, enum si5351_clock qclk);
-	void setIQFrequency(uint64_t freq, bool highClockPorts = false);
+	void setIQFrequency(uint64_t freq, enum si5351_clock iclk, enum si5351_clock qclk);
 	int getEvenDivisor(uint64_t freq);
 	void set_pll(uint64_t, enum si5351_pll);
 	void set_ms(enum si5351_clock, struct Si5351RegSet, uint8_t, uint8_t, uint8_t);
@@ -376,8 +376,7 @@ class Si5351
 
 	int i2c_file;
 	std::string i2c_filepath;
-	int lastMultRx, lastMultTx;
-	si5351_clock iclock, qclock, iclockTx, qclockTx;
+	int lastMult;
 };
 
 #endif /* SI5351_H_ */
