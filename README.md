@@ -84,8 +84,8 @@ To enable 2 time si5351
 mode = "IQ"
 ```
 
-
-![Tayloe](https://github.com/paulh002/SoapyHifiBerry/blob/master/Tayloe.jpg)
+## QSD and QSE combined board
+![Tayloe](https://github.com/paulh002/SoapyHifiBerry/blob/master/sdr-txrx.jpg)
 
 ![sdrberry](https://github.com/paulh002/SoapyHifiBerry/blob/master/HifiBerry%20Tayloe.jpg)
 
