@@ -7,6 +7,9 @@ The SoapyHifiBerry driver work with my SDR software SDRBERRY https://github.com/
 (SoapyHifiBerry relies on RtAudio library, which is included staticly. This can give problems with applications using also RtAudio but a different version, 
 in that case remove the RtAudio.cpp from SoapyHifiBerry and use correct RtAudio.h)
 
+The sdr41-rxtx board uses a Si5351A-B-GM which has 8 outputs 2 outputs are used in quadrature for receive and 2 outputs for receive. Unfortunaly 160 M is not possible in this design because of limitations of the si5351.
+An option would be to add a divide by 2 chip. The board compresses the whole design to a single pcb. SoapyHifiBerry can be configured by setting the mode to IQSINGLEMULTI and the multiplier to 1.
+
 Done:
 - Support 2 times Si5351 (RX and TX)
 - Si5351 I2C interface
@@ -82,6 +85,21 @@ To enable 2 time si5351
 ```
 [si5351]
 mode = "IQ"
+```
+
+
+To enable single Si5351A-B-GM
+
+```
+[si5351]
+correction = "121000"
+correctiontx = "132500"
+rxdrive = "2"
+txdrive = "4"
+mode = "IQSINGLEMULTI"
+multiplier = 1
+disabletxoutput = "on"
+
 ```
 
 ## QSD and QSE combined board (sdr41-rxtx)
