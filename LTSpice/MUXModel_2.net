@@ -1,0 +1,60 @@
+* C:\Users\paulh\OneDrive\source\SoapyHifiBerry\LTSpice\MUXModel_2.asc
+S7 N009 00 V_270_deg 0 MYSW
+S2 N009 01 V_90_deg 0 MYSW
+S4 N009 10 V_180_deg 0 MYSW
+S6 N009 11 V_0_deg 0 MYSW
+V3 N009 0 SINE(0 1uV 10.19Meg) AC 1mV Rser=200
+C1 N010 0 4.7n
+C2 N011 0 4.7n
+C3 N014 0 4.7n
+C4 N018 0 4.7n
+R5 N004 N010 100
+R6 Vdd N011 100
+R7 N012 N014 100
+R8 Vdd N018 100
+C9 N010 00 10µ
+C10 N011 01 10µ
+C11 N014 10 10µ
+C12 N018 11 10µ
+R1 N005 N004 10k
+R2 N013 N012 10k
+R3 Vcc Vdd 4.7k
+R4 Vdd 0 4.7k
+C5 Vcc 0 100n
+V4 Vcc 0 5 Rser=10
+R11 N007 N005 5.1k
+R12 N003 N002 5.1k
+R13 N017 N016 5.1k
+R14 N020 N013 5.1k
+R15 N008 N007 5.1k
+R16 N021 N020 5.1k
+C8 N008 0 68p
+C13 N021 0 68p
+R17 N016 N015 5.1k
+R18 N002 N001 5.1k
+C14 N001 0 10µ
+C15 N015 0 10µ
+C6 N006 N003 10µ
+C7 N019 N017 10µ
+R9 N006 0 2k
+R10 N019 0 2k
+C16 N003 N007 68p
+C17 N017 N020 68p
+V5 V_0_deg 0 PULSE(0 1 0 0.001p 0.001p {SW_time} {4*SW_time})
+V6 V_90_deg 0 PULSE(0 1 {SW_time} 0.001p 0.001p {SW_time} {4*SW_time})
+V7 V_180_deg 0 PULSE(0 1 {2*SW_time} 0.001p 0.001p {SW_time} {4*SW_time})
+V8 V_270_deg 0 PULSE(0 1 {3*SW_time} 0.001p 0.001p {SW_time} {4*SW_time})
+XU3 N021 N016 N017 Vcc 0 LT6231
+XU4 N008 N002 N003 Vcc 0 LT6231
+XU1 Vdd N012 N013 Vcc 0 LT6231
+XU2 Vdd N004 N005 Vcc 0 LT6231
+.model MYSW SW(Vt=0.9 Vh=0 Ron=5 Roff=100G)
+.tran 0 100u 0 0.01u
+* Multiplexer Model
+* Signals for voltage-controlled switches \nused to simulate our multiplexer.
+;step oct param Audio_freq 1000 10000 1
+.param Audio_freq 15000
+.param RF_freq=10Meg LO_freq={RF_freq} LO_period={1/LO_freq} SW_time={LO_period/4}
+.lib LTC2.LIB
+.backanno
+.end
