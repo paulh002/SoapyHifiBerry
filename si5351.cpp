@@ -184,6 +184,12 @@ void Si5351::reset(void)
 	// Then reset the PLLs
 	pll_reset(SI5351_PLLA);
 	pll_reset(SI5351_PLLB);
+	set_clock_disable(SI5351_CLK0, SI5351_CLK_DISABLE_LOW);
+	set_clock_disable(SI5351_CLK1, SI5351_CLK_DISABLE_LOW);
+	set_clock_disable(SI5351_CLK4, SI5351_CLK_DISABLE_LOW);
+	set_clock_disable(SI5351_CLK5, SI5351_CLK_DISABLE_LOW);
+	set_clock_disable(SI5351_CLK7, SI5351_CLK_DISABLE_HIGH);
+	
 
 	// Set initial frequencies
 	uint8_t i;
@@ -1009,6 +1015,7 @@ void Si5351::set_clock_source(enum si5351_clock clk, enum si5351_clock_source sr
 {
 	uint8_t reg_val;
 	reg_val = si5351_read(SI5351_CLK0_CTRL + (uint8_t)clk);
+	printf("Clock source %x src %d\n", reg_val, src);
 
 	// Clear the bits first
 	reg_val &= ~(SI5351_CLK_INPUT_MASK);
@@ -1036,6 +1043,7 @@ void Si5351::set_clock_source(enum si5351_clock clk, enum si5351_clock_source sr
 		return;
 	}
 
+	printf("Clock source %d val %x\n", clk, reg_val);
 	si5351_write(SI5351_CLK0_CTRL + (uint8_t)clk, reg_val);
 }
 
@@ -1869,7 +1877,7 @@ int Si5351::getEvenDivisor(uint64_t freq)
 		return 2;
 }
 
-void Si5351::setIQFrequency(uint64_t freq, enum si5351_clock iclk, enum si5351_clock qclk)
+void Si5351::setIQFrequency(uint64_t freq, enum si5351_clock iclk, enum si5351_clock qclk, bool reset)
 {
 	int mult = 0;
 
@@ -1878,14 +1886,15 @@ void Si5351::setIQFrequency(uint64_t freq, enum si5351_clock iclk, enum si5351_c
 	uint64_t pllFreq = freq * mult * 100ULL;
 
 	set_iq_freq_manual(f, pllFreq, iclk, qclk);
-	if (mult != lastMult)
+	if (mult != lastMult || reset)
 	{
-		printf("mult = %d pll = %ld Mhz  freq %ld\n", mult, pllFreq / 100L, freq);
 		set_phase(iclk, 0);
 		set_phase(qclk, mult);
 		pll_reset(SI5351_PLLA); ////pll_assignment[iclock] all ports should use plla
 		lastMult = mult;
+		printf("pll reset: ");
 	}
+	printf("mult = %d pll = %ld Mhz  freq %ld\n", mult, pllFreq / 100L, freq);
 	update_status();
 }
 
@@ -1933,3 +1942,4 @@ uint8_t Si5351::set_iq_freq_manual(uint64_t freq, uint64_t pll_freq, enum si5351
 
 	return 0;
 }
+

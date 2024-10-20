@@ -324,7 +324,7 @@ class Si5351
 	uint8_t set_freq(uint64_t, enum si5351_clock);
 	uint8_t set_freq_manual(uint64_t, uint64_t, enum si5351_clock);
 	uint8_t set_iq_freq_manual(uint64_t freq, uint64_t pll_freq, enum si5351_clock iclk, enum si5351_clock qclk);
-	void setIQFrequency(uint64_t freq, enum si5351_clock iclk, enum si5351_clock qclk);
+	void setIQFrequency(uint64_t freq, enum si5351_clock iclk, enum si5351_clock qclk, bool reset = false);
 	int getEvenDivisor(uint64_t freq);
 	void set_pll(uint64_t, enum si5351_pll);
 	void set_ms(enum si5351_clock, struct Si5351RegSet, uint8_t, uint8_t, uint8_t);
@@ -358,7 +358,7 @@ class Si5351
 	enum si5351_pll_input pllb_ref_osc;
 	uint32_t xtal_freq[2];
 	int getFileHandle() { return i2c_file; }
-
+	
   private:
 	uint64_t pll_calc(enum si5351_pll, uint64_t, struct Si5351RegSet *, int32_t, uint8_t);
 	uint64_t multisynth_calc(uint64_t, uint64_t, struct Si5351RegSet *);

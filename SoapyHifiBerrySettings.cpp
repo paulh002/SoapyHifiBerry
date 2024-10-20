@@ -6,7 +6,7 @@
  **********************************************************************/
 
 const cfg::File::ConfigMap defaultOptions = {
-	{"si5351", {{"correction", cfg::makeOption("0")}, {"correction_tx", cfg::makeOption("0")}, {"disabletxoutput", cfg::makeOption("off")}, {"mode", cfg::makeOption("IQMULTI")}, {"multiplier", cfg::makeOption("1")}, {"rxdrive", cfg::makeOption("8")}, {"txdrive", cfg::makeOption("8")}}},
+	{"si5351", {{"correction", cfg::makeOption("0")}, {"correction_tx", cfg::makeOption("0")}, {"disabletxoutput", cfg::makeOption("on")}, {"mode", cfg::makeOption("IQMULTI")}, {"multiplier", cfg::makeOption("1")}, {"rxdrive", cfg::makeOption("8")}, {"txdrive", cfg::makeOption("8")}}},
 	{"sound", {{"device", cfg::makeOption("snd_rpi_hifiberry_dacplusadcpro")}, {"samplerate", cfg::makeOption("192000")}, {"samplerate_tx", cfg::makeOption("192000")}, {"input", cfg::makeOption("DIFF")}}}};
 
 int SoapyHifiBerry::get_int(string section, string key)
@@ -204,8 +204,8 @@ SoapyHifiBerry::SoapyHifiBerry(const SoapySDR::Kwargs &args)
 		pSI5351->output_enable(qclk, 1);
 		pSI5351->drive_strength(iclkTx, txDrive);
 		pSI5351->drive_strength(qclkTx, txDrive);
-		pSI5351->output_enable(iclkTx, 1);
-		pSI5351->output_enable(qclkTx, 1);
+		pSI5351->output_enable(iclkTx, disableOutput ? (0) : (1));
+		pSI5351->output_enable(qclkTx, disableOutput ? (0) : (1));
 		pSI5351->update_status();
 	}
 	if (vfoIQMode == IQMulti)
@@ -427,10 +427,8 @@ void SoapyHifiBerry::setFrequency(const int direction, const size_t channel, con
 				pSI5351->set_freq((uint64_t)frequency * SI5351_FREQ_MULT * multiplier, iclk);
 			break;
 		case IQSingle:
-		case IQSingleMultiPort: {
-			if (pSI5351)
+		case IQSingleMultiPort:
 				pSI5351->setIQFrequency((long)frequency * (long)multiplier, iclk, qclk);
-		}
 			break;
 		case IQMulti:
 			if (pSI5351)
@@ -452,17 +450,16 @@ void SoapyHifiBerry::setFrequency(const int direction, const size_t channel, con
 			break;
 		case IQSingle:
 			if (pSI5351)
-				pSI5351->setIQFrequency((long)frequency * (long)multiplier, iclk, qclk);
+				pSI5351->setIQFrequency((long)frequency * (long)multiplier, iclk, qclk, true);
 			break;
 		case IQSingleMultiPort:
-			if (pSI5351)
-				pSI5351->setIQFrequency((long)frequency * (long)multiplier, iclkTx, qclkTx);
+			pSI5351->setIQFrequency((long)frequency * (long)multiplier, iclkTx, qclkTx, true);
 			break;
 		case IQMulti:
 			if (pSI5351tx)
 			{
 				pTCA9548->setChannelMask(2);
-				pSI5351tx->setIQFrequency((long)frequency * (long)multiplier, iclk, qclk);
+				pSI5351tx->setIQFrequency((long)frequency * (long)multiplier, iclk, qclk, true);
 			}
 			break;
 		}
