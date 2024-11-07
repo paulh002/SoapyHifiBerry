@@ -1846,13 +1846,13 @@ uint8_t Si5351::select_r_div_ms67(uint64_t *freq)
 
 // selects the best divider/phase constant for the range
 // from Mario AE0GL
-int Si5351::getEvenDivisor(uint64_t freq)
+uint8_t Si5351::getEvenDivisor(uint64_t freq)
 {
 
 	if (freq < 6850000)
 		return 126;
 	else if (freq < 9500000)
-		return 88;
+		return 122;
 	else if (freq < 13600000)
 		return 64;
 	else if (freq < 17500000)
@@ -1879,7 +1879,7 @@ int Si5351::getEvenDivisor(uint64_t freq)
 
 void Si5351::setIQFrequency(uint64_t freq, enum si5351_clock iclk, enum si5351_clock qclk, bool reset)
 {
-	int mult = 0;
+	uint8_t mult = 0;
 
 	mult = getEvenDivisor(freq);
 	uint64_t f = freq * 100ULL;

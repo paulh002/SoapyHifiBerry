@@ -325,7 +325,7 @@ class Si5351
 	uint8_t set_freq_manual(uint64_t, uint64_t, enum si5351_clock);
 	uint8_t set_iq_freq_manual(uint64_t freq, uint64_t pll_freq, enum si5351_clock iclk, enum si5351_clock qclk);
 	void setIQFrequency(uint64_t freq, enum si5351_clock iclk, enum si5351_clock qclk, bool reset = false);
-	int getEvenDivisor(uint64_t freq);
+	uint8_t getEvenDivisor(uint64_t freq);
 	void set_pll(uint64_t, enum si5351_pll);
 	void set_ms(enum si5351_clock, struct Si5351RegSet, uint8_t, uint8_t, uint8_t);
 	void output_enable(enum si5351_clock, uint8_t);
